@@ -59,6 +59,10 @@
   "files.associations": {
     "config.h": "c",
     "handle.h": "c",
-    "default_config.h": "c"
+    "default_config.h": "c",
+    "driver_gyroscope.h": "c",
+    "stm32f4xx.h": "c",
+    "mpu6500_driver.h": "c",
+    "mpu6500_i2c.h": "c"
   }
 }

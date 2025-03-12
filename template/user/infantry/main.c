@@ -129,9 +129,10 @@ int main(void) {
      *******************************************************************************/
 
     // 等待遥控器开启
-     //while (!remoteData.state) {
-    //}
+    // while (!remoteData.state) {
+    // }
     xTaskCreate(Task_Blink, "Task_Blink", 400, NULL, 3, NULL);
+    xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
     //模式切换任务
     xTaskCreate(Task_Control, "Task_Control", 400, NULL, 9, NULL);
 
