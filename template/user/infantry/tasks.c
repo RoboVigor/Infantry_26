@@ -391,7 +391,7 @@ void Task_Chassis(void *Parameters) {
         Motor_RF.input = motorCurrentOutput[3]* CurrentMap_C620_Inverse;
 
         // 调试信息
-        DebugData.debug0 = MCO_With_PowerLimit[0];
+				
         // DebugData.debug2 = vwRamp * 1000;
         // DebugData.debug3 = vw * 1000;
         // 底盘运动更新频率

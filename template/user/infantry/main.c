@@ -61,6 +61,7 @@ int main(void) {
     // USART
     BSP_UART7_Init(115200, USART_IT_IDLE);
     BSP_UART8_Init(115200, USART_IT_IDLE);
+    BSP_USART6_Init(115200, USART_IT_IDLE);
 
     // Servo
     BSP_PWM_Set_Port(&PWM_Magazine_Servo, PWM_PH10);
@@ -93,13 +94,17 @@ int main(void) {
     // 陀螺仪
     Gyroscope_Init(&Gyroscope_EulerData, 300); // 初始化
 
+    //绑定debug指针
+    VofaData = &(ProtocolData.debugInfo.vofaData);
+    DebugData = &(ProtocolData.debugInfo.debugData);
+
     /*******************************************************************************
      *                                 任务初始化                                   *
      *******************************************************************************/
 
     // 等待遥控器开启
-    while (!remoteData.state) {
-    }
+    // while (!remoteData.state) {
+    // }
     xTaskCreate(Task_Blink, "Task_Blink", 400, NULL, 3, NULL);
     // xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
     //模式切换任务
@@ -121,8 +126,7 @@ int main(void) {
     // 定义协议发送频率
     Bridge_Send_Protocol(&Node_Host, 0x120, 1);  // 心跳包
     Bridge_Send_Protocol(&Node_Host, 0x403, 20); // 陀螺仪
-    // Bridge_Send_Protocol(&Node_Host, 0x404, 10); // 遥控器
-    // Bridge_Send_Protocol(&Node_Judge, 0XF101, 10); // 遥控器
+    // Bridge_Send_Protocol(&Node_Debug, 0x1024, 10);
     Vofa_Send(10, 200, &Node_Debug, 0x1024);
 
     //启动调度,开始执行任务

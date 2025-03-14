@@ -37,6 +37,18 @@ typedef struct {
 } GraphicData_Type;
 
 typedef struct {
+    int32_t debug0;
+    int32_t debug1;
+    int32_t debug2;
+    int32_t debug3;
+    int32_t debug4;
+    int32_t debug5;
+    int32_t debug6;
+    int32_t debug7;
+} DebugData_Type;
+
+typedef struct 
+{
     float debug0;
     float debug1;
     float debug2;
@@ -45,7 +57,8 @@ typedef struct {
     float debug5;
     float debug6;
     uint32_t vofaTail;
-} DebugData_Type;
+}VofaData_type;
+
 
 /**********************************************************************
  *                              协议列表
@@ -352,6 +365,10 @@ typedef union {
 typedef union {
     struct {
         DebugData_Type debugData;
+    };
+    struct 
+    {
+        VofaData_type vofaData;
     };
     struct {
         uint8_t data[32];

@@ -73,7 +73,8 @@ __HANDLE_EXT volatile ImuData_Type       ImuData;
 __HANDLE_EXT volatile GyroscopeData_Type Gyroscope_EulerData;
 
 // 调试数据
-__HANDLE_EXT DebugData_Type DebugData;
+__HANDLE_EXT DebugData_Type *DebugData;
+__HANDLE_EXT VofaData_type *VofaData;
 
 // 底盘
 __HANDLE_EXT ChassisData_Type ChassisData;

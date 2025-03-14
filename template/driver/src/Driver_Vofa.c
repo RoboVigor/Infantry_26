@@ -15,7 +15,7 @@ void Task_Vofa_Send(void * Parameters){
 }
 
 void Vofa_Send(uint16_t frequency, uint16_t heapDeth, Node_Type * node, uint32_t commandID){
-  ProtocolData.debugInfo.debugData.vofaTail = vofaTail_t;
+  ProtocolData.debugInfo.vofaData.vofaTail = vofaTail_t;
   ProtocolInfo_Type *protocolInfo = Protocol_Get_Info_Handle(commandID);
   if (protocolInfo->taskHandle != 0) {
     vTaskDelete(protocolInfo->taskHandle);
