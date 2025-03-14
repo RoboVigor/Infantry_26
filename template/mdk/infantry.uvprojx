@@ -385,21 +385,6 @@
           <GroupName>core</GroupName>
           <Files>
             <File>
-              <FileName>arm_common_tables.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\core\arm_common_tables.h</FilePath>
-            </File>
-            <File>
-              <FileName>arm_const_structs.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\core\arm_const_structs.h</FilePath>
-            </File>
-            <File>
-              <FileName>arm_math.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\core\arm_math.h</FilePath>
-            </File>
-            <File>
               <FileName>core_cm4.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\core\core_cm4.h</FilePath>

@@ -279,16 +279,8 @@ void Task_Chassis(void *Parameters) {
         vy = 0;
         vw = 0;
         if (ControlMode == 1) {
-			if(ROBOT_MIAO || ROBOT_WANG)
-			{
-				vx = -remoteData.lx / 660.0f * 20.0;
-				vy = remoteData.ly / 660.0f * 20.0;
-			}
-			if(ROBOT_SHARK)
-			{
-				vx = -remoteData.lx / 660.0f * 20.0;
-				vy = remoteData.ly / 660.0f * 20.0;
-			}
+			vx = -remoteData.lx / 660.0f * 20.0;
+			vy = remoteData.ly / 660.0f * 20.0;
 
         } else if (ControlMode == 2) {
             xTargetRamp = RAMP(xRampStart, 660, xRampProgress);
@@ -303,27 +295,19 @@ void Task_Chassis(void *Parameters) {
             } else if (yRampProgress > 0.5 && yRampProgress < 1) {
                 yRampProgress += 0.002f;
             }
-			if(ROBOT_MIAO)
-			{
-				vx = (keyboardData.A - keyboardData.D) * xTargetRamp / 660.0f * 8;
-				vy = (keyboardData.W - keyboardData.S) * yTargetRamp / 660.0f * 12;
-			}
-			if(ROBOT_SHARK)
-			{
-				vx = (keyboardData.A - keyboardData.D) * xTargetRamp / 660.0f * 8;
-				vy = (keyboardData.W - keyboardData.S) * yTargetRamp / 660.0f * 12;
-			}
-            
+			vx = (keyboardData.A - keyboardData.D) * xTargetRamp / 660.0f * 8;
+			vy = (keyboardData.W - keyboardData.S) * yTargetRamp / 660.0f * 12;
+		}            
 
-            if (keyboardData.W == 0 && keyboardData.S == 0) {
-                yRampProgress = 0;
-                yRampStart    = 0;
-            }
-            if (keyboardData.A == 0 && keyboardData.D == 0) {
-                xRampProgress = 0;
-                xRampStart    = 0;
-            }
+        if (keyboardData.W == 0 && keyboardData.S == 0) {
+            yRampProgress = 0;
+            yRampStart    = 0;
         }
+        if (keyboardData.A == 0 && keyboardData.D == 0) {
+            xRampProgress = 0;
+            xRampStart    = 0;
+        }
+    
         //运动学正解算底盘真实速度
         Chassis_Calculate_Real_Speed(&ChassisData, realMotorSpeed);
 
@@ -372,7 +356,7 @@ void Task_Chassis(void *Parameters) {
             break;
 
         default:
-            targetPower = 50;
+            targetPower = 200;
             break;
         }
 
@@ -401,13 +385,13 @@ void Task_Chassis(void *Parameters) {
         Chassis_Calculate_Power_Limit(motorCurrentOutput, MCO_With_PowerLimit, realMotorSpeed, targetPower);
 
         // 输出电流值到电调 功率限制已修改完成
-        Motor_LF.input = MCO_With_PowerLimit[0];
-        Motor_LB.input = MCO_With_PowerLimit[1];
-        Motor_RB.input = MCO_With_PowerLimit[2];
-        Motor_RF.input = MCO_With_PowerLimit[3];
+        Motor_LF.input = motorCurrentOutput[0]* CurrentMap_C620_Inverse;
+        Motor_LB.input = motorCurrentOutput[1]* CurrentMap_C620_Inverse;
+        Motor_RB.input = motorCurrentOutput[2]* CurrentMap_C620_Inverse;
+        Motor_RF.input = motorCurrentOutput[3]* CurrentMap_C620_Inverse;
 
         // 调试信息
-        // DebugData.debug1 = vx * 1000;
+        DebugData.debug0 = MCO_With_PowerLimit[0];
         // DebugData.debug2 = vwRamp * 1000;
         // DebugData.debug3 = vw * 1000;
         // 底盘运动更新频率

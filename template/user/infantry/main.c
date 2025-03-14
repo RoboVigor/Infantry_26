@@ -43,6 +43,7 @@ int main(void) {
     Protocol_Init(&Node_Host, &ProtocolData);
     Protocol_Init(&Node_Board, &ProtocolData);
     Protocol_Init(&Node_SuperCap, &ProtocolData);
+    Protocol_Init(&Node_Debug,&ProtocolData);
 
     // 硬件配置
     BSP_CAN_Init();
@@ -66,59 +67,27 @@ int main(void) {
     BSP_PWM_Init(&PWM_Magazine_Servo, 9000, 200, TIM_OCPolarity_Low);
 
     // Calibration
-    if (ROBOT_MIAO) {
-        Motor_Set_Angle_Bias(&Motor_Yaw, 200);
-        Motor_Set_Angle_Bias(&Motor_Pitch, 315.046);
-        Gyroscope_Set_Bias(&ImuData, 30, 4, -7);
-    } else if (ROBOT_WANG) {
-        Motor_Set_Angle_Bias(&Motor_Yaw, 239.941);
-        Motor_Set_Angle_Bias(&Motor_Pitch, 75.488);
-        Gyroscope_Set_Bias(&ImuData, 31, -5, -2);
-    } else if (ROBOT_SHARK) {
-         Motor_Set_Angle_Bias(&Motor_Yaw, 149.318);
-        Motor_Set_Angle_Bias(&Motor_Pitch, 200.652);
-        Gyroscope_Set_Bias(&ImuData, 10, -28, -1);
-    }
+    Motor_Set_Angle_Bias(&Motor_Yaw, 200);
+    Gyroscope_Set_Bias(&ImuData, 30, 4, -7);
+
 
     // 总线设置
-    if (ROBOT_MIAO) {
-		Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x201, &Motor_LAJI);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x202, &Motor_LF);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x203, &Motor_LB);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x204, &Motor_RB);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x205, &Motor_RF);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x206, &Motor_Pitch);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x209, &Motor_Yaw);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x202, &Motor_FL);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x201, &Motor_FR);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x205, &Motor_Stir);
-    } else if (ROBOT_WANG) {
-		Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x201, &Motor_LAJI);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x202, &Motor_LF);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x203, &Motor_LB);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x204, &Motor_RB);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x205, &Motor_RF);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x208, &Motor_Pitch);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x209, &Motor_Yaw);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x201, &Motor_FL);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x203, &Motor_FR);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x206, &Motor_Stir);
-    } else if (ROBOT_SHARK) {
-				Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x201, &Motor_LAJI);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x202, &Motor_LF);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x203, &Motor_LB);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x204, &Motor_RB);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x205, &Motor_RF);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x201, &Motor_FL);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x202, &Motor_FR);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x203, &Motor_Stir);
-        Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x205, &Motor_Pitch);
-        Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x206, &Motor_Yaw);
-    }
+	Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x201, &Motor_LAJI);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x202, &Motor_LF);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x203, &Motor_LB);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x204, &Motor_RB);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x205, &Motor_RF);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x206, &Motor_Pitch);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x209, &Motor_Yaw);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x202, &Motor_FL);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x201, &Motor_FR);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x205, &Motor_Stir);
+   
 
     // 总线设置
     Bridge_Bind(&BridgeData, USART_BRIDGE, 7, &Node_Host);
     Bridge_Bind(&BridgeData, USART_BRIDGE, 8, &Node_Judge);
+    Bridge_Bind(&BridgeData, USART_BRIDGE, 6,&Node_Debug);
     Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x500, &Node_SuperCap);
 
     // 陀螺仪
@@ -129,10 +98,10 @@ int main(void) {
      *******************************************************************************/
 
     // 等待遥控器开启
-    // while (!remoteData.state) {
-    // }
+    while (!remoteData.state) {
+    }
     xTaskCreate(Task_Blink, "Task_Blink", 400, NULL, 3, NULL);
-    xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
+    // xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
     //模式切换任务
     xTaskCreate(Task_Control, "Task_Control", 400, NULL, 9, NULL);
 
@@ -141,7 +110,7 @@ int main(void) {
 
     // 运动控制任务
     xTaskCreate(Task_Chassis, "Task_Chassis", 400, NULL, 5, NULL);
-    xTaskCreate(Task_Gimbal, "Task_Gimbal", 500, NULL, 5, NULL);
+    // xTaskCreate(Task_Gimbal, "Task_Gimbal", 500, NULL, 5, NULL);
     xTaskCreate(Task_Fire_Stir, "Task_Fire_Stir", 400, NULL, 6, NULL);
     xTaskCreate(Task_Fire_Frict, "Task_Fire_Frict", 400, NULL, 6, NULL);
 	xTaskCreate(Task_Wait,"Task_Wait",400,NULL,5,NULL);
@@ -154,6 +123,7 @@ int main(void) {
     Bridge_Send_Protocol(&Node_Host, 0x403, 20); // 陀螺仪
     // Bridge_Send_Protocol(&Node_Host, 0x404, 10); // 遥控器
     // Bridge_Send_Protocol(&Node_Judge, 0XF101, 10); // 遥控器
+    Vofa_Send(10, 200, &Node_Debug, 0x1024);
 
     //启动调度,开始执行任务
     vTaskStartScheduler();
