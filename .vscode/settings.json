@@ -63,6 +63,7 @@
     "driver_gyroscope.h": "c",
     "stm32f4xx.h": "c",
     "mpu6500_driver.h": "c",
-    "mpu6500_i2c.h": "c"
+    "mpu6500_i2c.h": "c",
+    "driver_motor.h": "c"
   }
 }
