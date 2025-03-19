@@ -142,9 +142,9 @@ void Gyroscope_Solve(GyroscopeData_Type *GyroscopeData) {
 #endif
 
     // 四元数->欧拉角
-    rollAngle = atan2(2.0f * (q0 * q1 + q2 * q3), 1 - 2*(q2*q2 + q3*q3)) * 180 / PI;
+    yawAngle = atan2(2.0f * (q1 * q2 + q0 * q3), 1 - 2*(q2*q2 + q3*q3)) * 180 / PI;
     pitchAngle  = asin(2.0f * (q0 * q2 - q1 * q3)) * 180 / PI;
-    yawAngle   = atan2(2.0f * (q1 * q2 + q0 * q3), 1 - 2*(q1*q1 + q2*q2)) * 180 / PI;
+    rollAngle   = atan2(2.0f * (q0 * q1 + q2 * q3), 1 - 2*(q1*q1 + q2*q2)) * 180 / PI;
 
     VofaData->debug1 = rollAngle;
     VofaData->debug2 = pitchAngle;
