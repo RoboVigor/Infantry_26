@@ -116,7 +116,7 @@ void Task_Gimbal(void *Parameters) {
         pitchAngle   = Gyroscope_EulerData.pitch;  // 
         pitchSpeed   = Gyroscope_EulerData.pitchSpeed; // 
         chassisAngle = - Motor_Pitch.angle + pitchAngle; //计算底盘的旋转角度，此处要求一点，电机角度和imu要保持一致
-        motorYawSpeed = Motor_Yaw.speed;
+        motorYawSpeed = Motor_Yaw.speed*RPM2RPS;
 
         // 遥控器输入角度目标
 		if(ControlMode==1)
@@ -178,6 +178,7 @@ void Task_Gimbal(void *Parameters) {
         Motor_Yaw.input   = yawCurrent;
         Motor_Pitch.input = pitchCurrent;
 
+
         //任务间隔
         vTaskDelayUntil(&LastWakeTime, intervalms);
     }
@@ -219,15 +220,15 @@ void Task_Chassis(void *Parameters) {
     PID_Init(&PID_Follow_Speed, 1, 0.5, 0, 900, 0);
 
     // 速度环PID
-    PID_Init(&PID_LFCM, 2, 0, 0, 6000, 0);
-    PID_Init(&PID_LBCM, 2, 0, 0, 6000, 0);
-    PID_Init(&PID_RBCM, 2, 0, 0, 6000, 0);
-    PID_Init(&PID_RFCM, 2, 0, 0, 6000, 0);
+    PID_Init(&PID_LFCM, 1, 0, 0, 6000, 0);
+    PID_Init(&PID_LBCM, 1, 0, 0, 6000, 0);
+    PID_Init(&PID_RBCM, 1, 0, 0, 6000, 0);
+    PID_Init(&PID_RFCM, 1, 0, 0, 6000, 0);
 
     //扭矩前馈PID
-    PID_Init(&PID_Fx, 20, 0, 1, 0, 0);
-    PID_Init(&PID_Fy, 20, 0, 1, 0, 0);
-    PID_Init(&PID_T, 20, 0, 1, 0, 0);
+    PID_Init(&PID_Fx, 7, 0, 0.5, 0, 0);
+    PID_Init(&PID_Fy, 7, 0, 0.5, 0, 0);
+    PID_Init(&PID_T, 7, 0, 0.5, 0, 0);
 
     // 初始化底盘
     Chassis_Init(&ChassisData);
@@ -279,8 +280,8 @@ void Task_Chassis(void *Parameters) {
         vy = 0;
         vw = 0;
         if (ControlMode == 1) {
-			vx = -remoteData.lx / 660.0f * 20.0;
-			vy = remoteData.ly / 660.0f * 20.0;
+			vx = -remoteData.lx / 660.0f * 10.0;
+			vy = remoteData.ly / 660.0f * 10.0;
 
         } else if (ControlMode == 2) {
             xTargetRamp = RAMP(xRampStart, 660, xRampProgress);
@@ -314,30 +315,18 @@ void Task_Chassis(void *Parameters) {
         //地盘跟随和小陀螺
         if(!swingModeEnabled){
             //底盘跟随云台
-            vw += Gyroscope_EulerData.yawSpeed * DPS2RPS; //前馈
-            PID_Calculate(&PID_Follow_Angle, 0, (int)motorAngle % 360);
-            if(abs(PID_Follow_Angle.error) > followDeadRegion) {
-                PID_Calculate(&PID_Follow_Speed, PID_Follow_Angle.output, 0); //此处本质是为了让已有速度前馈下还存在的error进行一个速度小补偿，此处的速度环pid仅作scalar的作用并无反馈
-                vw += PID_Follow_Speed.output;
-            }
+            // vw += Gyroscope_EulerData.yawSpeed * DPS2RPS; //前馈
+            // PID_Calculate(&PID_Follow_Angle, 0, (int)motorAngle % 360);
+            // if(abs(PID_Follow_Angle.error) > followDeadRegion) {
+            //     PID_Calculate(&PID_Follow_Speed, PID_Follow_Angle.output, 0); //此处本质是为了让已有速度前馈下还存在的error进行一个速度小补偿，此处的速度环pid仅作scalar的作用并无反馈
+            //     vw += PID_Follow_Speed.output;
+            // }
 
         }else{
             // 小陀螺
             vw = swingSpeed;
         }
 
-        // 按条件开启底盘K_I
-        if (vx < 0.1 && vy < 0.1 && vw < 0.3) {
-            PID_LFCM.i = 1;
-            PID_LBCM.i = 1;
-            PID_RBCM.i = 1;
-            PID_RFCM.i = 1;
-        } else {
-            PID_LFCM.i = 0;
-            PID_LBCM.i = 0;
-            PID_RBCM.i = 0;
-            PID_RFCM.i = 0;
-        }
 
         // 开机时底盘匀速回正
         vwRamp = RAMP(0, vw, vwRampProgress);
@@ -382,18 +371,23 @@ void Task_Chassis(void *Parameters) {
         motorCurrentOutput[3] = PID_RFCM.output * CurrentMap_C620;
 
         Chassis_Current_Output_Integrate(motorCurrentOutput, &ChassisData);
-        Chassis_Calculate_Power_Limit(motorCurrentOutput, MCO_With_PowerLimit, realMotorSpeed, targetPower);
+        VofaData->debug0 = Chassis_Calculate_Power_Limit(motorCurrentOutput, MCO_With_PowerLimit, realMotorSpeed, targetPower);
 
         // 输出电流值到电调 功率限制已修改完成
-        Motor_LF.input = motorCurrentOutput[0]* CurrentMap_C620_Inverse;
-        Motor_LB.input = motorCurrentOutput[1]* CurrentMap_C620_Inverse;
-        Motor_RB.input = motorCurrentOutput[2]* CurrentMap_C620_Inverse;
-        Motor_RF.input = motorCurrentOutput[3]* CurrentMap_C620_Inverse;
+        Motor_LF.input = MCO_With_PowerLimit[0];
+        Motor_LB.input = MCO_With_PowerLimit[1];
+        Motor_RB.input = MCO_With_PowerLimit[2];
+        Motor_RF.input = MCO_With_PowerLimit[3];
 
         // 调试信息
 				
-        // DebugData.debug2 = vwRamp * 1000;
-        // DebugData.debug3 = vw * 1000;
+        // VofaData->debug1 = vx;
+        // VofaData->debug2 = vy;
+        // VofaData->debug3 = MCO_With_PowerLimit[0];
+        // VofaData->debug4 = ChassisData.realvw;
+        // VofaData->debug5 = (realMotorSpeed[0]+realMotorSpeed[1]+realMotorSpeed[2]+realMotorSpeed[3])*0.25f/(CHASSIS_INVERSE_WHEEL_RADIUS * CHASSIS_MOTOR_REDUCTION_RATE)/CHASSIS_RADIUS;
+        // VofaData->debug6 = ChassisData.rotorTorgue[0]*3.33f;
+
         // 底盘运动更新频率
         vTaskDelayUntil(&LastWakeTime, intervalms);
     }

@@ -4,6 +4,7 @@
 #include "config.h"
 #include "MadgwickAHRS.h"
 #include "Driver_Gyroscope.h"
+#include "handle.h"
 
 static float          rollAngle;
 static float          pitchAngle;
@@ -24,7 +25,6 @@ double yawoffset_add=0;
 
 Filter_Type Filter_Yaw = {.count = 0, .thresholdLB = GYROSCOPE_YAW_FILTER_THRESHOLD};
 
-extern ImuData_Type ImuData;
 
 void Gyroscope_Init(GyroscopeData_Type *GyroscopeData, uint16_t startupDelay) {
     GyroscopeData->startupCounter = 0;
@@ -68,7 +68,7 @@ int Gyroscope_Update(GyroscopeData_Type *GyroscopeData) {
     static uint8_t mpu_buf[20];
 
     //尝试读取数据
-    //if (IIC_ReadData(MPU_IIC_ADDR, MPU6500_ACCEL_XOUT_H, mpu_buf, 14) == 0xff) return 0;
+    if (IIC_ReadData(MPU_IIC_ADDR, MPU6500_ACCEL_XOUT_H, mpu_buf, 14) == 0xff) return 0;
 
     //成功的话进行赋值
     ImuData.temp = (((int16_t) mpu_buf[6]) << 8) | mpu_buf[7];
@@ -145,6 +145,10 @@ void Gyroscope_Solve(GyroscopeData_Type *GyroscopeData) {
     rollAngle = atan2(2.0f * (q0 * q1 + q2 * q3), 1 - 2*(q2*q2 + q3*q3)) * 180 / PI;
     pitchAngle  = asin(2.0f * (q0 * q2 - q1 * q3)) * 180 / PI;
     yawAngle   = atan2(2.0f * (q1 * q2 + q0 * q3), 1 - 2*(q1*q1 + q2*q2)) * 180 / PI;
+
+    VofaData->debug1 = rollAngle;
+    VofaData->debug2 = pitchAngle;
+    VofaData->debug3 = yawAngle;
 
     //计算角速度
     Gyroscope_Calculate_angleSpeed(GyroscopeData, yawAngle, pitchAngle, rollAngle);

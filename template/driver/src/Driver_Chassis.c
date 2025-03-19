@@ -41,15 +41,15 @@ void Chassis_Fix(ChassisData_Type *cd, float angle) {
 }
 //此处运动学逆解已修改为全向轮地盘
 void Chassis_Calculate_Rotor_Speed(ChassisData_Type *cd) {
-    float coefficient = CHASSIS_INVERSE_WHEEL_RADIUS * CHASSIS_MOTOR_REDUCTION_RATE;
+    float coefficient = (CHASSIS_INVERSE_WHEEL_RADIUS * CHASSIS_MOTOR_REDUCTION_RATE);
     cd->rotorSpeed[0] = coefficient * ((cd->vy - cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
     cd->rotorSpeed[1] = coefficient * ((cd->vy + cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
     cd->rotorSpeed[2] = -coefficient * ((cd->vy - cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
     cd->rotorSpeed[3] = -coefficient * ((cd->vy + cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
 }
 //此处为运动学正结算
-void Chassis_Calculate_Real_Speed(ChassisData_Type *cd, int16_t * motor_Speed) {
-    float coefficient = CHASSIS_INVERSE_WHEEL_RADIUS * CHASSIS_MOTOR_REDUCTION_RATE;
+void Chassis_Calculate_Real_Speed(ChassisData_Type *cd, float * motor_Speed) {
+    float coefficient = (CHASSIS_INVERSE_WHEEL_RADIUS * CHASSIS_MOTOR_REDUCTION_RATE);
     cd->realvx = (-motor_Speed[0]-motor_Speed[1]+motor_Speed[2]+motor_Speed[3])*0.354f/coefficient;
     cd->realvy = (motor_Speed[0]-motor_Speed[1]-motor_Speed[2]+motor_Speed[3])*0.354f/coefficient;
     cd->realvw = (motor_Speed[0]+motor_Speed[1]+motor_Speed[2]+motor_Speed[3])*0.25f/coefficient/CHASSIS_RADIUS;
@@ -137,9 +137,25 @@ void Chassis_Current_Output_Integrate(float *motorCurrentOutput, ChassisData_Typ
     }
 }
 
-void Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With_PowerLimit, float *realMotorSpeed, float targetPower){
+float Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With_PowerLimit, float *realMotorSpeed, float targetPower){
     float coefficient[6] = SECOND_MACLAURIN_COEFFICIENT;
-    float totalPower = 0;
+    float totalPower = 0, ETA = 0, scale = 1;
+    for (int i = 0; i < 4; i++)
+    {
+        if(motorCurrentOutput[i] > 19.9f){
+            if ((19.9f / motorCurrentOutput[i]) < scale)
+            {
+                scale = 19.9f / motorCurrentOutput[i];
+            }
+        }
+    }
+    
+    for (int i = 0; i < 4; i++)
+    {
+        motorCurrentOutput[i] = scale * motorCurrentOutput[i];
+    }
+    
+    
     for(int i =0; i < 4; i++) {
         totalPower += (coefficient[0] \
                        + coefficient[1]*motorCurrentOutput[i] \
@@ -154,9 +170,10 @@ void Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With_
         for(int i=0; i<4; i++){
             MCO_With_PowerLimit[i] = motorCurrentOutput[i] * CurrentMap_C620_Inverse;
         }
+        ETA = 1;
     }
     else{
-        float a =0, b =0, c =0, ETA =0;
+        float a =0, b =0, c =0;
         for(int i =0; i < 4; i++){
             a += (coefficient[4]*motorCurrentOutput[i]*motorCurrentOutput[i]);
         }
@@ -188,4 +205,5 @@ void Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With_
             MCO_With_PowerLimit[i] = motorCurrentOutput[i] * ETA * CurrentMap_C620_Inverse;
         }
     }
+    return ETA;
 }

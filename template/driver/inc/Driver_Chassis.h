@@ -71,7 +71,7 @@ void Chassis_Calculate_Rotor_Speed(ChassisData_Type *ChassisData);
 /**
  * @brief 全向运动学正解算
  */
-void Chassis_Calculate_Real_Speed(ChassisData_Type *cd, int16_t * motor_Speed);
+void Chassis_Calculate_Real_Speed(ChassisData_Type *cd, float * motor_Speed);
 /**
  * @brief 全向动力学逆解算
  */
@@ -114,5 +114,5 @@ void Chassis_Current_Output_Integrate(float *motorCurrentOutput, ChassisData_Typ
  * @param realMotorSpeed        运动学正解算出的电机转子角速度
  * @param targetPower           裁判系统的功率限制值
  */
-void Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With_PowerLimit, float *realMotorSpeed, float targetPower);
+float Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With_PowerLimit, float *realMotorSpeed, float targetPower);
 #endif
