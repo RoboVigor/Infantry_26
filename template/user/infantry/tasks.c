@@ -101,8 +101,8 @@ void Task_Gimbal(void *Parameters) {
     // 初始化云台PID
     PID_Init(&PID_Cloud_YawAngle, 5, 1, 0, 1000, 10);
     PID_Init(&PID_Cloud_YawSpeed, 7, 2, 0, 4000, 10);
-    PID_Init(&PID_Cloud_PitchAngle, 15, 0, 0, 16000, 0);
-    PID_Init(&PID_Cloud_PitchSpeed, 75, 0, 0, 16000, 0);
+    PID_Init(&PID_Cloud_PitchAngle, 5, 0, 0, 1000, 0);
+    PID_Init(&PID_Cloud_PitchSpeed, 7, 0, 0, 4000, 0);
     PID_Init(&PID_Cloud_MotorYawSpeed, 3, 1, 0, 4000, 0);
 
     while (1) {

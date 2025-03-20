@@ -141,11 +141,12 @@ float Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With
     float coefficient[6] = SECOND_MACLAURIN_COEFFICIENT;
     float totalPower = 0, ETA = 0, scale = 1;
     for (int i = 0; i < 4; i++)
-    {
-        if(motorCurrentOutput[i] > 19.9f){
-            if ((19.9f / motorCurrentOutput[i]) < scale)
+    {   
+        float current = abs(motorCurrentOutput[i]);
+        if(current > 19.9f){
+            if ((19.9f / current) < scale)
             {
-                scale = 19.9f / motorCurrentOutput[i];
+                scale = 19.9f / current;
             }
         }
     }
