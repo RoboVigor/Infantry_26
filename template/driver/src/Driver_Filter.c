@@ -1,5 +1,6 @@
 #include "Driver_Filter.h"
 #include "macro.h"
+#include "handle.h"
 
 void Filter_Update(Filter_Type *filter, float value) {
     int i;
@@ -44,13 +45,8 @@ void Filter_Update_Moving_Average(Filter_Type *filter) {
 }
 
 float Filter_Apply_Limit_Breadth(Filter_Type *filter) {
-    // 限幅
-    if (ABS(filter->diff) < ABS(filter->thresholdLB)) {
-        filter->offset -= filter->diff;
-    }
-
+    filter->offset -= filter->driftConfficient;
     // 结果
     filter->result = filter->value + filter->offset;
-
     return filter->result;
 }

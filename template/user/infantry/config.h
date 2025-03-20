@@ -50,7 +50,7 @@
 #define fastTriangle 1                          // 快速三角函数计算，仅用于imu解算，且下列三个角度必须为PI/2的倍数
 #define angle_x 0                               // 内旋，先绕x轴旋转角度（rad）
 #define angle_y 0                               // 内旋，再绕y轴旋转角度（rad）
-#define angle_z 0                            // 内旋，最后绕z轴旋转角度（rad）
+#define angle_z PI/2                            // 内旋，最后绕z轴旋转角度（rad）
 #if fastTriangle
   #define f_cos(para) (pow(-1, ((int)((para + PI/2)/PI*2))/2)*abs((int)((para + PI/2)/PI*2)%2))
   #define f_sin(para) (pow(-1, ((int)(para/PI*2))/2)*abs((int)(para/PI*2)%2))
@@ -61,7 +61,7 @@
 #define trans_matrix {f_cos(angle_y)*f_cos(angle_z), f_cos(angle_x)*f_sin(angle_z) + f_cos(angle_z)*f_sin(angle_x)*f_sin(angle_y), f_sin(angle_x)*f_sin(angle_z) - f_cos(angle_x)*f_cos(angle_z)*f_sin(angle_y), \
                       -f_cos(angle_y)*f_sin(angle_z), f_cos(angle_x)*f_cos(angle_z) - f_sin(angle_x)*f_sin(angle_y)*f_sin(angle_z), f_cos(angle_z)*f_sin(angle_x) + f_cos(angle_x)*f_sin(angle_y)*f_sin(angle_z),  \
                       f_sin(angle_y), -f_cos(angle_y)*f_sin(angle_x), f_cos(angle_x)*f_cos(angle_y)}
-#define GYROSCOPE_YAW_FILTER_THRESHOLD 0.005f // 零飘修正阈值   (2024/6/8)感觉不太好用，是我不会用吗？
+#define GYROSCOPE_YAW_FILTER_Coefficient 0.002749701472f // 零飘修正阈值   (2024/6/8)感觉不太好用，是我不会用吗？
 #define GYROSCOPE_YAW_MODIFICATION -0.002f    // 零飘修正值
 #define GYROSCOPE_LSB 16.384f                 // 陀螺仪敏感度 2^16/4000
 #define ACCELERATE_LSB 4096.0f                // 加速度计敏感度 2^16/16

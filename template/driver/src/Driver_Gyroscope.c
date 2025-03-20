@@ -23,7 +23,7 @@ static int16_t        debug_pitch = 0;
 
 double yawoffset_add=0;
 
-Filter_Type Filter_Yaw = {.count = 0, .thresholdLB = GYROSCOPE_YAW_FILTER_THRESHOLD};
+Filter_Type Filter_Yaw = {.count = 0, .driftConfficient = GYROSCOPE_YAW_FILTER_Coefficient};
 
 
 void Gyroscope_Init(GyroscopeData_Type *GyroscopeData, uint16_t startupDelay) {
@@ -146,10 +146,6 @@ void Gyroscope_Solve(GyroscopeData_Type *GyroscopeData) {
     pitchAngle  = asin(2.0f * (q0 * q2 - q1 * q3)) * 180 / PI;
     rollAngle   = atan2(2.0f * (q0 * q1 + q2 * q3), 1 - 2*(q1*q1 + q2*q2)) * 180 / PI;
 
-    VofaData->debug1 = rollAngle;
-    VofaData->debug2 = pitchAngle;
-    VofaData->debug3 = yawAngle;
-
     //计算角速度
     Gyroscope_Calculate_angleSpeed(GyroscopeData, yawAngle, pitchAngle, rollAngle);
 
@@ -168,7 +164,7 @@ void Gyroscope_Solve(GyroscopeData_Type *GyroscopeData) {
 
     // 应用滤波
     GyroscopeData->yaw = Filter_Apply_Limit_Breadth(&Filter_Yaw) + GyroscopeData->yawoffset;            //+GyroscopeData->modification;重复零飘修正，在滤波中已有零漂限幅补偿
-
+    
     // 开机时yaw轴转动角度补偿，用于正式启动时的yaw轴零点确定
     #if GYROSCOPE_START_UP_DELAY_ENABLED
     if (GyroscopeData->startupCounter == GYROSCOPE_START_UP_DELAY - 1) {
