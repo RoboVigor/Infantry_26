@@ -465,10 +465,10 @@ typedef union
 {
     struct 
     {
-        uint16_t data1;
-        uint16_t data2;
-        uint16_t data3;
-        uint16_t data4;
+        int16_t basePower;
+        int16_t sate;
+        int16_t maxDischargePower;
+        int16_t energyPercentage;
     };
 
     struct 

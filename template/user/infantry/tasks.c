@@ -401,31 +401,35 @@ void Task_Host(void *Parameters) {
     int16_t            lastReceiveSeq = 0;
     int64_t            sinceReceive;
     while (1) {
+        VofaData->debug1 = ProtocolData.superCapBoard.basePower;
+        VofaData->debug2 = ProtocolData.superCapBoard.sate;
+        VofaData->debug3 = ProtocolData.superCapBoard.maxDischargePower;
+        VofaData->debug4 = ProtocolData.superCapBoard.energyPercentage;
         // transmit
-        ProtocolData.gyroscopeData.pitch = Gyroscope_EulerData.pitch;
-        ProtocolData.gyroscopeData.yaw   = Gyroscope_EulerData.yaw;
-        ProtocolData.gyroscopeData.roll  = Gyroscope_EulerData.roll;
-        memcpy(ProtocolData.dbusData.dbusBuffer, remoteBuffer, 19);
+        // ProtocolData.gyroscopeData.pitch = Gyroscope_EulerData.pitch;
+        // ProtocolData.gyroscopeData.yaw   = Gyroscope_EulerData.yaw;
+        // ProtocolData.gyroscopeData.roll  = Gyroscope_EulerData.roll;
+        // memcpy(ProtocolData.dbusData.dbusBuffer, remoteBuffer, 19);
 
-        // receive autoaim data
-        protocolInfo = Protocol_Get_Info_Handle(0x401);
-        if (protocolInfo->lastReceiveSeq != protocolInfo->receiveSeq) {
-            memcpy(HostAutoaimData.data, ProtocolData.autoaimData.data, protocolInfo->length);
-            protocolInfo->lastReceiveSeq = protocolInfo->receiveSeq;
-        } else {
-            memset(HostAutoaimData.data, 0, protocolInfo->length);
-        }
-        FacingEnemyMode = HostAutoaimData.yaw_angle_diff != 0 || HostAutoaimData.pitch_angle_diff != 0;
-        // DebugData.debug5 = protocolInfo->receiveSeq;
+        // // receive autoaim data
+        // protocolInfo = Protocol_Get_Info_Handle(0x401);
+        // if (protocolInfo->lastReceiveSeq != protocolInfo->receiveSeq) {
+        //     memcpy(HostAutoaimData.data, ProtocolData.autoaimData.data, protocolInfo->length);
+        //     protocolInfo->lastReceiveSeq = protocolInfo->receiveSeq;
+        // } else {
+        //     memset(HostAutoaimData.data, 0, protocolInfo->length);
+        // }
+        // FacingEnemyMode = HostAutoaimData.yaw_angle_diff != 0 || HostAutoaimData.pitch_angle_diff != 0;
+        // // DebugData.debug5 = protocolInfo->receiveSeq;
 
-        // receive chassis data
-        protocolInfo = Protocol_Get_Info_Handle(0x402);
-        sinceReceive = xTaskGetTickCount() - protocolInfo->receiveTime;
-        if (sinceReceive > 0 && sinceReceive < 200) {
-            memcpy(HostChassisData.data, ProtocolData.chassisData.data, protocolInfo->length);
-        } else {
-            memset(HostChassisData.data, 0, protocolInfo->length);
-        }
+        // // receive chassis data
+        // protocolInfo = Protocol_Get_Info_Handle(0x402);
+        // sinceReceive = xTaskGetTickCount() - protocolInfo->receiveTime;
+        // if (sinceReceive > 0 && sinceReceive < 200) {
+        //     memcpy(HostChassisData.data, ProtocolData.chassisData.data, protocolInfo->length);
+        // } else {
+        //     memset(HostChassisData.data, 0, protocolInfo->length);
+        // }
 
         // debug
         // DebugData.debug1 = HostAutoaimData.yaw_angle_diff * 1000;

@@ -124,8 +124,8 @@ int main(void) {
     xTaskCreate(Task_Host, "Task_Host", 500, NULL, 6, NULL);
 
     // 定义协议发送频率
-    Bridge_Send_Protocol(&Node_Host, 0x120, 1);  // 心跳包
-    Bridge_Send_Protocol(&Node_Host, 0x403, 20); // 陀螺仪
+    // Bridge_Send_Protocol(&Node_Host, 0x120, 1);  // 心跳包
+    // Bridge_Send_Protocol(&Node_Host, 0x403, 20); // 陀螺仪
     // Bridge_Send_Protocol(&Node_Debug, 0x1024, 10);
     Vofa_Send(10, 200, &Node_Debug, 0x1024);
 
