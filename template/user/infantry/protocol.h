@@ -535,7 +535,7 @@ typedef union {
         superCapBoard_t                superCapBoard                // 0x0500 超级电容
     };
     struct {
-        uint8_t data[626];
+        uint8_t data[610];
     };
 } ProtocolData_Type;
 

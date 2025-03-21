@@ -341,11 +341,11 @@ void Task_Chassis(void *Parameters) {
             break;
         
         case fastMove:
-            targetPower = 240;
+            targetPower = 360;
             break;
 
         default:
-            targetPower = 200;
+            targetPower = 50;
             break;
         }
 
@@ -371,7 +371,7 @@ void Task_Chassis(void *Parameters) {
         motorCurrentOutput[3] = PID_RFCM.output * CurrentMap_C620;
 
         Chassis_Current_Output_Integrate(motorCurrentOutput, &ChassisData);
-        VofaData->debug0 = Chassis_Calculate_Power_Limit(motorCurrentOutput, MCO_With_PowerLimit, realMotorSpeed, targetPower);
+        Chassis_Calculate_Power_Limit(motorCurrentOutput, MCO_With_PowerLimit, realMotorSpeed, targetPower);
 
         // 输出电流值到电调 功率限制已修改完成
         Motor_LF.input = MCO_With_PowerLimit[0];
@@ -400,11 +400,29 @@ void Task_Host(void *Parameters) {
     ProtocolInfo_Type *protocolInfo;
     int16_t            lastReceiveSeq = 0;
     int64_t            sinceReceive;
+    float      interval     = 0.1;               // 任务运行间隔 s
+    int        intervalms   = interval * 1000;     // 任务运行间隔 ms
+
+    uint16_t targetPower = 0;
+    uint16_t refereePower = 0;
+    uint8_t sendBuffer[8] = {0,0,0,0,0x12,0x20,0x12,0x07};
     while (1) {
-        VofaData->debug1 = ProtocolData.superCapBoard.basePower;
-        VofaData->debug2 = ProtocolData.superCapBoard.sate;
-        VofaData->debug3 = ProtocolData.superCapBoard.maxDischargePower;
-        VofaData->debug4 = ProtocolData.superCapBoard.energyPercentage;
+        if(fricEnabled){
+        targetPower =  ProtocolData.gameRobotstatus.chassis_power_limit - 10; //留点余量；
+        }else
+        {
+            targetPower = 50;
+        }
+        refereePower = ProtocolData.gameRobotstatus.chassis_power_limit;
+        sendBuffer[0] = targetPower&0xff;
+        sendBuffer[1] = targetPower >> 8;
+        sendBuffer[2] = refereePower & 0xff;
+        sendBuffer[3] = refereePower >> 8;
+        Can_Send_Msg(CAN1, 0x4ff, sendBuffer, 8);
+        // VofaData->debug1 = ProtocolData.superCapBoard.basePower;
+        // VofaData->debug2 = ProtocolData.superCapBoard.sate;
+        // VofaData->debug3 = ProtocolData.superCapBoard.maxDischargePower;
+        // VofaData->debug4 = ProtocolData.superCapBoard.energyPercentage;
         // transmit
         // ProtocolData.gyroscopeData.pitch = Gyroscope_EulerData.pitch;
         // ProtocolData.gyroscopeData.yaw   = Gyroscope_EulerData.yaw;
@@ -437,7 +455,7 @@ void Task_Host(void *Parameters) {
         // DebugData.debug3 = HostAutoaimData.pitch_angle_diff*1000;
         // DebugData.debug4 = ProtocolData.autoaimData.pitch_angle_diff*1000;
 
-        vTaskDelayUntil(&LastWakeTime, 8);
+        vTaskDelayUntil(&LastWakeTime, intervalms);
     }
     vTaskDelete(NULL);
 }

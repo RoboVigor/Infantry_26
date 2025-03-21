@@ -1,10 +1,15 @@
 #include "Driver_Bridge.h"
+#include "handle.h"
 #pragma pack(8)
 
 void Bridge_Bind(Bridge_Type *bridge, uint8_t type, uint32_t deviceID, void *handle) {
     if (IS_MOTOR) {
         MOTOR = handle;
-    } else {
+    }else if(deviceID <= 0x188 && deviceID >= 0x181){
+        deviceID = deviceID - 0x180 + 0x200 + 12;
+        MOTOR = handle;
+    } 
+    else {
         Node_Type *node = handle;
         if (IS_CAN) {
             CAN_NODE = node;
@@ -49,6 +54,7 @@ void Bridge_Receive_CAN(Bridge_Type *bridge, uint8_t type) {
     // 读取数据
     CAN_Receive(type == CAN1_BRIDGE ? CAN1 : CAN2, CAN_FIFO0, &CanRxData);
     deviceID = CanRxData.StdId;
+    VofaData->debug6 = deviceID;
 
     // 安排数据
     if (IS_MOTOR) {
@@ -63,7 +69,7 @@ void Bridge_Receive_CAN(Bridge_Type *bridge, uint8_t type) {
         for (i = 0; i < CanRxData.DLC; i++) {
             node              = CAN_NODE;
             node->isFirstByte = i == 0 ? 1 : 0;
-            Protocol_Unpack(node, CanRxData.Data[i]);
+            Protocol_Unpack(node, CanRxData.Data[i]);;
         }
     }
 }

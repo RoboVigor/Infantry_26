@@ -32,8 +32,8 @@ int main(void) {
     Motor_Init(&Motor_FR, 1, DISABLE, ENABLE);
 
     // 云台电机
-    Motor_Init(&Motor_Yaw, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);   // 顺时针为正电流
-    Motor_Init(&Motor_Pitch, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE); // 顺时针为正电流
+    Motor_Init(&Motor_Yaw, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);   
+    Motor_Init(&Motor_Pitch, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE); 
 
     // 遥控器数据初始化
     DBUS_Init(&remoteData, &keyboardData, &mouseData);
@@ -103,8 +103,8 @@ int main(void) {
      *******************************************************************************/
 
     // 等待遥控器开启
-    while (!remoteData.state) {
-    }
+    // while (!remoteData.state) {
+    // }
     xTaskCreate(Task_Blink, "Task_Blink", 400, NULL, 3, NULL);
     // xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
     //模式切换任务
@@ -126,8 +126,10 @@ int main(void) {
     // 定义协议发送频率
     // Bridge_Send_Protocol(&Node_Host, 0x120, 1);  // 心跳包
     // Bridge_Send_Protocol(&Node_Host, 0x403, 20); // 陀螺仪
-    // Bridge_Send_Protocol(&Node_Debug, 0x1024, 10);
-    Vofa_Send(10, 200, &Node_Debug, 0x1024);
+    
+    // debug发送
+    // Bridge_Send_Protocol(&Node_Debug, 0x1024, 200);
+    Vofa_Send(200, 200, &Node_Debug, 0x1024);
 
     //启动调度,开始执行任务
     vTaskStartScheduler();

@@ -10,7 +10,7 @@
 #define ROBOT_WANG (Robot_Id == 2)
 #define ROBOT_SHARK (Robot_Id == 3)
 
-//
+//裁判系统启用
 #define fricEnabled 0
 
 // 调试
