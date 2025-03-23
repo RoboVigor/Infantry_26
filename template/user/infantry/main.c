@@ -80,9 +80,9 @@ int main(void) {
     Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x205, &Motor_RF);
     Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x206, &Motor_Pitch);
     Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x209, &Motor_Yaw);
-    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x202, &Motor_FL);
-    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x201, &Motor_FR);
-    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x205, &Motor_Stir);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x203, &Motor_FL);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x202, &Motor_FR);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x204, &Motor_Stir);
    
 
     // 总线设置
@@ -103,8 +103,8 @@ int main(void) {
      *******************************************************************************/
 
     // 等待遥控器开启
-    // while (!remoteData.state) {
-    // }
+    while (!remoteData.state) {
+    }
     xTaskCreate(Task_Blink, "Task_Blink", 400, NULL, 3, NULL);
     // xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
     //模式切换任务

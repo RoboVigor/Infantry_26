@@ -43,9 +43,9 @@ void Chassis_Fix(ChassisData_Type *cd, float angle) {
 void Chassis_Calculate_Rotor_Speed(ChassisData_Type *cd) {
     float coefficient = (CHASSIS_INVERSE_WHEEL_RADIUS * CHASSIS_MOTOR_REDUCTION_RATE);
     cd->rotorSpeed[0] = coefficient * ((cd->vy - cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
-    cd->rotorSpeed[1] = coefficient * ((cd->vy + cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
+    cd->rotorSpeed[1] = -coefficient * ((cd->vy + cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
     cd->rotorSpeed[2] = -coefficient * ((cd->vy - cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
-    cd->rotorSpeed[3] = -coefficient * ((cd->vy + cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
+    cd->rotorSpeed[3] = coefficient * ((cd->vy + cd->vx)*0.707f + cd->vw * CHASSIS_RADIUS);
 }
 //此处为运动学正结算
 void Chassis_Calculate_Real_Speed(ChassisData_Type *cd, float * motor_Speed) {
@@ -135,6 +135,7 @@ void Chassis_Current_Output_Integrate(float *motorCurrentOutput, ChassisData_Typ
     for(int i =0; i<4; i++){
         motorCurrentOutput[i] += (cd->rotorTorgue[i]*3.333f) ;
     }
+    VofaData->debug2 = motorCurrentOutput[0];
 }
 
 float Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With_PowerLimit, float *realMotorSpeed, float targetPower){
@@ -142,21 +143,23 @@ float Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With
     float totalPower = 0, ETA = 0, scale = 1;
     for (int i = 0; i < 4; i++)
     {   
-        float current = abs(motorCurrentOutput[i]);
+        float current = motorCurrentOutput[i] >= 0 ? motorCurrentOutput[i] : -motorCurrentOutput[i];
         if(current > 19.9f){
             if ((19.9f / current) < scale)
             {
                 scale = 19.9f / current;
+                VofaData->debug4 = current;
             }
         }
     }
-    
+    VofaData->debug6 = scale;
+    VofaData->debug5 = motorCurrentOutput[0];
     for (int i = 0; i < 4; i++)
     {
         motorCurrentOutput[i] = scale * motorCurrentOutput[i];
     }
     
-    
+    VofaData->debug3 = motorCurrentOutput[0];
     for(int i =0; i < 4; i++) {
         totalPower += (coefficient[0] \
                        + coefficient[1]*motorCurrentOutput[i] \
@@ -166,7 +169,6 @@ float Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With
                        + coefficient[5]*realMotorSpeed[i]*realMotorSpeed[i] \
                     );
     }
-
     if(totalPower <= targetPower) {
         for(int i=0; i<4; i++){
             MCO_With_PowerLimit[i] = motorCurrentOutput[i] * CurrentMap_C620_Inverse;

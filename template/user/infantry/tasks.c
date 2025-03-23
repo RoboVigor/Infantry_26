@@ -177,6 +177,9 @@ void Task_Gimbal(void *Parameters) {
         pitchCurrent = PID_Cloud_PitchSpeed.output;
         Motor_Yaw.input   = yawCurrent;
         Motor_Pitch.input = pitchCurrent;
+        // VofaData->debug1 = pitchCurrent;
+        // VofaData->debug2 = Motor_Pitch.angle;
+        // VofaData->debug3 = BridgeData.motors[5]->online;
 
 
         //任务间隔
@@ -350,7 +353,7 @@ void Task_Chassis(void *Parameters) {
         }
 
         Chassis_Update(&ChassisData, vx, vy, vwRamp); // 更新麦轮转速
-        Chassis_Fix(&ChassisData, motorAngle);        // 修正旋转后底盘的前进方向
+        // Chassis_Fix(&ChassisData, motorAngle);        // 修正旋转后底盘的前进方向
         Chassis_Calculate_Rotor_Speed(&ChassisData);  // 麦轮解算
 
 
@@ -371,23 +374,16 @@ void Task_Chassis(void *Parameters) {
         motorCurrentOutput[3] = PID_RFCM.output * CurrentMap_C620;
 
         Chassis_Current_Output_Integrate(motorCurrentOutput, &ChassisData);
-        Chassis_Calculate_Power_Limit(motorCurrentOutput, MCO_With_PowerLimit, realMotorSpeed, targetPower);
+        VofaData->debug0 =  Chassis_Calculate_Power_Limit(motorCurrentOutput, MCO_With_PowerLimit, realMotorSpeed, targetPower);
 
         // 输出电流值到电调 功率限制已修改完成
         Motor_LF.input = MCO_With_PowerLimit[0];
-        Motor_LB.input = MCO_With_PowerLimit[1];
+        Motor_LB.input = MCO_With_PowerLimit[1];    
         Motor_RB.input = MCO_With_PowerLimit[2];
         Motor_RF.input = MCO_With_PowerLimit[3];
 
         // 调试信息
-				
-        // VofaData->debug1 = vx;
-        // VofaData->debug2 = vy;
-        // VofaData->debug3 = MCO_With_PowerLimit[0];
-        // VofaData->debug4 = ChassisData.realvw;
-        // VofaData->debug5 = (realMotorSpeed[0]+realMotorSpeed[1]+realMotorSpeed[2]+realMotorSpeed[3])*0.25f/(CHASSIS_INVERSE_WHEEL_RADIUS * CHASSIS_MOTOR_REDUCTION_RATE)/CHASSIS_RADIUS;
-        // VofaData->debug6 = ChassisData.rotorTorgue[0]*3.33f;
-
+        
         // 底盘运动更新频率
         vTaskDelayUntil(&LastWakeTime, intervalms);
     }
@@ -419,26 +415,23 @@ void Task_Host(void *Parameters) {
         sendBuffer[2] = refereePower & 0xff;
         sendBuffer[3] = refereePower >> 8;
         Can_Send_Msg(CAN1, 0x4ff, sendBuffer, 8);
-        // VofaData->debug1 = ProtocolData.superCapBoard.basePower;
-        // VofaData->debug2 = ProtocolData.superCapBoard.sate;
-        // VofaData->debug3 = ProtocolData.superCapBoard.maxDischargePower;
-        // VofaData->debug4 = ProtocolData.superCapBoard.energyPercentage;
-        // transmit
-        // ProtocolData.gyroscopeData.pitch = Gyroscope_EulerData.pitch;
-        // ProtocolData.gyroscopeData.yaw   = Gyroscope_EulerData.yaw;
-        // ProtocolData.gyroscopeData.roll  = Gyroscope_EulerData.roll;
-        // memcpy(ProtocolData.dbusData.dbusBuffer, remoteBuffer, 19);
 
-        // // receive autoaim data
-        // protocolInfo = Protocol_Get_Info_Handle(0x401);
-        // if (protocolInfo->lastReceiveSeq != protocolInfo->receiveSeq) {
-        //     memcpy(HostAutoaimData.data, ProtocolData.autoaimData.data, protocolInfo->length);
-        //     protocolInfo->lastReceiveSeq = protocolInfo->receiveSeq;
-        // } else {
-        //     memset(HostAutoaimData.data, 0, protocolInfo->length);
-        // }
-        // FacingEnemyMode = HostAutoaimData.yaw_angle_diff != 0 || HostAutoaimData.pitch_angle_diff != 0;
-        // // DebugData.debug5 = protocolInfo->receiveSeq;
+        // transmit
+        ProtocolData.gyroscopeData.pitch = Gyroscope_EulerData.pitch;
+        ProtocolData.gyroscopeData.yaw   = Gyroscope_EulerData.yaw;
+        ProtocolData.gyroscopeData.roll  = Gyroscope_EulerData.roll;
+        memcpy(ProtocolData.dbusData.dbusBuffer, remoteBuffer, 19);
+
+        // receive autoaim data
+        protocolInfo = Protocol_Get_Info_Handle(0x401);
+        if (protocolInfo->lastReceiveSeq != protocolInfo->receiveSeq) {
+            memcpy(HostAutoaimData.data, ProtocolData.autoaimData.data, protocolInfo->length);
+            protocolInfo->lastReceiveSeq = protocolInfo->receiveSeq;
+        } else {
+            memset(HostAutoaimData.data, 0, protocolInfo->length);
+        }
+        FacingEnemyMode = HostAutoaimData.yaw_angle_diff != 0 || HostAutoaimData.pitch_angle_diff != 0;
+        // DebugData.debug5 = protocolInfo->receiveSeq;
 
         // // receive chassis data
         // protocolInfo = Protocol_Get_Info_Handle(0x402);

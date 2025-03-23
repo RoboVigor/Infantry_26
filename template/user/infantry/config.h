@@ -25,7 +25,7 @@
 // 底盘配置
 #define CHASSIS_MOTOR_REDUCTION_RATE 19.2f  // 底盘电机减速比
 #define CHASSIS_SIZE_K 0.385f               // 测量值, 机器人中心点到XY边缘的距离之和
-#define CHASSIS_INVERSE_WHEEL_RADIUS 13.16f // 测量值, 麦克纳姆轮半径的倒数
+#define CHASSIS_INVERSE_WHEEL_RADIUS 13.333f // 测量值, 麦克纳姆轮半径的倒数
 #define CHASSIS_RADIUS 0.250f               // 测量值，全向轮电机到底盘俯视图几何中心的距离
 // k0,k1,k2,k3,k4,k5
 #define SECOND_MACLAURIN_COEFFICIENT {0.6641993412640775,     \

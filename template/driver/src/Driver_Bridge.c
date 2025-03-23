@@ -54,7 +54,6 @@ void Bridge_Receive_CAN(Bridge_Type *bridge, uint8_t type) {
     // 读取数据
     CAN_Receive(type == CAN1_BRIDGE ? CAN1 : CAN2, CAN_FIFO0, &CanRxData);
     deviceID = CanRxData.StdId;
-    VofaData->debug6 = deviceID;
 
     // 安排数据
     if (IS_MOTOR) {
