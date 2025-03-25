@@ -162,9 +162,25 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
+          <LineNumber>117</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134244600</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\user\infantry\tasks.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\Belief_exp2\../user/infantry/tasks.c\117</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
           <LineNumber>105</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134234164</Address>
+          <Address>134233932</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -176,27 +192,11 @@
           <Expression>\\Belief_exp2\../user/infantry/interrupt.c\105</Expression>
         </Bp>
         <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>119</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134245540</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\user\infantry\tasks.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\Belief_exp2\../user/infantry/tasks.c\119</Expression>
-        </Bp>
-        <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>134</LineNumber>
+          <LineNumber>135</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134257266</Address>
+          <Address>134256256</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -205,7 +205,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\user\infantry\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Belief_exp2\../user/infantry/main.c\134</Expression>
+          <Expression>\\Belief_exp2\../user/infantry/main.c\135</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -247,22 +247,22 @@
         <Ww>
           <count>7</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DebugData.debug5</ItemText>
+          <ItemText>Motor_Pitch.position</ItemText>
         </Ww>
         <Ww>
           <count>8</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Motor_Pitch.position</ItemText>
+          <ItemText>ROBOT_SHARK</ItemText>
         </Ww>
         <Ww>
           <count>9</count>
           <WinNumber>1</WinNumber>
-          <ItemText>ROBOT_SHARK</ItemText>
+          <ItemText>yawAngle</ItemText>
         </Ww>
         <Ww>
           <count>10</count>
           <WinNumber>1</WinNumber>
-          <ItemText>yawAngle</ItemText>
+          <ItemText>pitchAngleTarget</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -336,7 +336,7 @@
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>0</SubType>
-          <ItemText>0x40013008</ItemText>
+          <ItemText>pitchAngleTarget</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>

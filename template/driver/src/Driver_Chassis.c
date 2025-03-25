@@ -135,7 +135,6 @@ void Chassis_Current_Output_Integrate(float *motorCurrentOutput, ChassisData_Typ
     for(int i =0; i<4; i++){
         motorCurrentOutput[i] += (cd->rotorTorgue[i]*3.333f) ;
     }
-    VofaData->debug2 = motorCurrentOutput[0];
 }
 
 float Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With_PowerLimit, float *realMotorSpeed, float targetPower){
@@ -148,18 +147,15 @@ float Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With
             if ((19.9f / current) < scale)
             {
                 scale = 19.9f / current;
-                VofaData->debug4 = current;
             }
         }
     }
-    VofaData->debug6 = scale;
-    VofaData->debug5 = motorCurrentOutput[0];
+
     for (int i = 0; i < 4; i++)
     {
         motorCurrentOutput[i] = scale * motorCurrentOutput[i];
     }
     
-    VofaData->debug3 = motorCurrentOutput[0];
     for(int i =0; i < 4; i++) {
         totalPower += (coefficient[0] \
                        + coefficient[1]*motorCurrentOutput[i] \

@@ -64,6 +64,8 @@
     "stm32f4xx.h": "c",
     "mpu6500_driver.h": "c",
     "mpu6500_i2c.h": "c",
-    "driver_motor.h": "c"
+    "driver_motor.h": "c",
+    "cmath": "c",
+    "*.tcc": "c"
   }
 }

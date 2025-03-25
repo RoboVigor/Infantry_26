@@ -3,6 +3,7 @@
 #include "config.h"
 #include "macro.h"
 #include "handle.h"
+#include "math.h"
 
 int qian = 0 ,zuo = 0 ;
 
@@ -79,8 +80,10 @@ void Task_Gimbal(void *Parameters) {
     float yawAngle, yawSpeed, pitchAngle, pitchSpeed, chassisAngle, motorYawSpeed;
 
     // 目标值
-    float yawAngleTarget            = 0; // 目标Yaw
     float pitchAngleTarget          = 0; // 目标Pitch
+    float yawAngleTarget            = 0; // 目标Yaw
+  
+    float pitchT = 0;
     float yawAngleTargetControl     = 0; // 遥控器输入
     float pitchAngleTargetControl   = 0; // 遥控器输入
     float pitchAngleTargetFix       = 0; // 上坡补偿
@@ -90,8 +93,8 @@ void Task_Gimbal(void *Parameters) {
     int8_t pitchInit                  = 0; // pitch启动初始校准
 
     // 输出量
-    int32_t yawCurrent   = 0;
-    int32_t pitchCurrent = 0;
+    int16_t yawCurrent   = 0;
+    int16_t pitchCurrent = 0;
 
     // Pitch轴斜坡参数
     float pitchRampProgress    = 0;
@@ -99,30 +102,32 @@ void Task_Gimbal(void *Parameters) {
     float pitchAngleTargetRamp = 0;
 
     // 初始化云台PID
-    PID_Init(&PID_Cloud_YawAngle, 5, 1, 0, 1000, 10);
-    PID_Init(&PID_Cloud_YawSpeed, 7, 2, 0, 4000, 10);
-    PID_Init(&PID_Cloud_PitchAngle, 5, 0, 0, 1000, 0);
-    PID_Init(&PID_Cloud_PitchSpeed, 7, 0, 0, 4000, 0);
-    PID_Init(&PID_Cloud_MotorYawSpeed, 3, 1, 0, 4000, 0);
+    PID_Init(&PID_Cloud_YawAngle, 7, 1, 0, 4000, 10);
+    PID_Init(&PID_Cloud_YawSpeed, 9, 2, 0, 23000, 10);
+    PID_Init(&PID_Cloud_PitchAngle, 10, 0, 0, 16000, 1000);
+    PID_Init(&PID_Cloud_PitchSpeed, 45, 1, 0, 16000, 10000);
+    PID_Init(&PID_Cloud_MotorYawSpeed, 3, 1, 0, 23000, 0);
 
     while (1) {
         // 重置目标
-        yawAngleTarget   = 0;
-        pitchAngleTarget = 0;
+        // yawAngleTarget   = 0;
+        // pitchAngleTarget = 0;
+        yawAngleTargetControl = 0;
+        pitchAngleTargetControl = 0;
 
         // 设置反馈
         yawAngle     = Gyroscope_EulerData.yaw;    // 逆时针为正
         yawSpeed     = Gyroscope_EulerData.yawSpeed;      // 逆时针为正
         pitchAngle   = Gyroscope_EulerData.pitch;  // 
-        pitchSpeed   = Gyroscope_EulerData.pitchSpeed; // 
+        pitchSpeed   = abs((int)Gyroscope_EulerData.pitchSpeed) > 50 ? Motor_Pitch.speed : Gyroscope_EulerData.pitchSpeed; // 
         chassisAngle = - Motor_Pitch.angle + pitchAngle; //计算底盘的旋转角度，此处要求一点，电机角度和imu要保持一致
         motorYawSpeed = Motor_Yaw.speed*RPM2RPS;
 
         // 遥控器输入角度目标
 		if(ControlMode==1)
 		{
-        if (ABS(remoteData.rx) > 30) yawAngleTargetControl = remoteData.rx / 660.0f * 360 * interval;
-        if (ABS(remoteData.ry) > 30) pitchAngleTargetControl = remoteData.ry / 660.0f * 360 * interval;
+        if (ABS(remoteData.rx) > 30) yawAngleTargetControl = remoteData.rx / 660.0f * 360 * interval * 0.1;
+        if (ABS(remoteData.ry) > 30) pitchAngleTargetControl = remoteData.ry / 660.0f * 360 * interval * 0.1;
 		}
 		else if (ControlMode==2)
 		{
@@ -132,7 +137,6 @@ void Task_Gimbal(void *Parameters) {
         yawAngleTarget += yawAngleTargetControl;
         pitchAngleTarget += pitchAngleTargetControl;
 
-
         // 视觉辅助
         yawAngleTargetPs = HostAutoaimData.yaw_angle_diff;
         pitchAngleTargetPs = HostAutoaimData.pitch_angle_diff;
@@ -140,26 +144,21 @@ void Task_Gimbal(void *Parameters) {
              yawAngleTarget = yawAngle + yawAngleTargetPs;
              pitchAngleTarget = pitchAngle + pitchAngleTargetPs;
         }
-        // 斜坡补偿
-        // pitchAngleTargetFix = -1 * (chassisAngle / 40.0) * (GIMBAL_PITCH_MIN - pitchAngleTarget);                        //这东西写的什么玩意，根本看不懂他的数学模型是什么
-        // FirstOrderLowPassFilter(pitchAngleTargetFix, &pitchAngleTargetFixStable, 200, 20);
-        // pitchAngleTarget += pitchAngleTargetFixStable;
 
         // 限制云台运动范围即斜坡补偿
-        MIAO(pitchAngleTarget, GIMBAL_PITCH_MIN + chassisAngle, GIMBAL_PITCH_MAX + chassisAngle);
+        MIAO(pitchAngleTarget, GIMBAL_PITCH_MIN + chassisAngle, GIMBAL_PITCH_MAX + chassisAngle);;  
+
 
         // 开机时pitch轴匀速抬起
         if(!pitchInit){
-            pitchAngleTarget = RAMP(pitchRampStart, 0, pitchRampProgress);
-            if (pitchRampProgress < 1) {
-            pitchRampProgress += 0.01f;  
-            }
-            else{
-                if(Motor_Pitch.angleBiasInit) Motor_Pitch.angleBias = 0;
-                Motor_Set_Angle_Bias(&Motor_Pitch, Motor_Pitch.angle);
-                pitchInit = 1;
-            }
+            if(Motor_Pitch.angleBiasInit) Motor_Pitch.angleBias = 0;
+            Motor_Set_Angle_Bias(&Motor_Pitch,  pitchAngle);
+            pitchInit = 1;
         }
+        // pitchAngleTarget = RAMP(pitchRampStart, 0, pitchRampProgress);
+        // if (pitchRampProgress < 1) {
+        // pitchRampProgress += 0.005f;  
+        // }
 
         // 计算PID
         PID_Calculate(&PID_Cloud_YawAngle, yawAngleTarget, Gyroscope_EulerData.yaw);
@@ -168,18 +167,22 @@ void Task_Gimbal(void *Parameters) {
         PID_Calculate(&PID_Cloud_PitchSpeed, PID_Cloud_PitchAngle.output, pitchSpeed);
         PID_Calculate(&PID_Cloud_MotorYawSpeed, ChassisData.realvw, -1*motorYawSpeed);
 
+
         // 输出电流
         if(SwingMode){
             yawCurrent = (1 - pow(2.71828, -2.23*abs(PID_Cloud_YawAngle.error)))*PID_Cloud_YawSpeed.output + pow(2.71828, -2.23*abs(PID_Cloud_YawAngle.error)) * PID_Cloud_MotorYawSpeed.output;   //动态权重融合
         }else{
             yawCurrent = PID_Cloud_YawSpeed.output;
         }
-        pitchCurrent = PID_Cloud_PitchSpeed.output;
+        pitchCurrent = PID_Cloud_PitchSpeed.output; //-8500 * cos((pitchAngle * PI /180.0f))
         Motor_Yaw.input   = yawCurrent;
         Motor_Pitch.input = pitchCurrent;
-        // VofaData->debug1 = pitchCurrent;
-        // VofaData->debug2 = Motor_Pitch.angle;
-        // VofaData->debug3 = BridgeData.motors[5]->online;
+        VofaData->debug1 = pitchCurrent;
+        VofaData->debug2 = pitchAngleTarget;
+        VofaData->debug4 = PID_Cloud_PitchAngle.output;
+        VofaData->debug3 = pitchAngle;
+        VofaData->debug5 = PID_Cloud_PitchAngle.error;
+        VofaData->debug6 = pitchSpeed;
 
 
         //任务间隔
@@ -283,8 +286,8 @@ void Task_Chassis(void *Parameters) {
         vy = 0;
         vw = 0;
         if (ControlMode == 1) {
-			vx = -remoteData.lx / 660.0f * 10.0;
-			vy = remoteData.ly / 660.0f * 10.0;
+			vy = remoteData.lx / 660.0f * 10.0;
+			vx = -remoteData.ly / 660.0f * 10.0;
 
         } else if (ControlMode == 2) {
             xTargetRamp = RAMP(xRampStart, 660, xRampProgress);
@@ -589,7 +592,7 @@ void Task_Fire_Stir(void *Parameters) {
 //						Motor_FR.input = 1*PID_FireR.output;
         }
 		*/
-		stirSpeed=1000;
+		stirSpeed=0;
 		
         PID_Calculate(&PID_StirSpeed, stirSpeed, Motor_Stir.speed * RPM2RPS);
         Motor_Stir.input = PID_StirSpeed.output;
@@ -690,7 +693,7 @@ void Task_Fire_Frict(void *Parameters) {
 //			Motor_FL.input = PID_FireL.output;
 //			Motor_FR.input = PID_FireR.output;
 //        }
-		targetSpeed = 4000;
+		targetSpeed = 0;
 		PID_Calculate(&PID_FireL, -1*targetSpeed, Motor_FL.speed);
 		PID_Calculate(&PID_FireR, targetSpeed, Motor_FR.speed);
 		Motor_FL.input = PID_FireL.output;
