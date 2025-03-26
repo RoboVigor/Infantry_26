@@ -68,7 +68,7 @@ int main(void) {
     BSP_PWM_Init(&PWM_Magazine_Servo, 9000, 200, TIM_OCPolarity_Low);
 
     // Calibration
-    Motor_Set_Angle_Bias(&Motor_Yaw, 200);
+    Motor_Set_Angle_Bias(&Motor_Yaw, 95);
     Gyroscope_Set_Bias(&ImuData, 30, 4, -7);
 
 

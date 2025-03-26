@@ -78,7 +78,7 @@ __HANDLE_EXT VofaData_type *VofaData;
 
 // 底盘
 __HANDLE_EXT ChassisData_Type ChassisData;
-__HANDLE_EXT PID_Type         PID_LFCM, PID_LBCM, PID_RBCM, PID_RFCM, PID_YawAngle, PID_YawSpeed, PID_Fx, PID_Fy, PID_T;
+__HANDLE_EXT PID_Type         PID_LFCM, PID_LBCM, PID_RBCM, PID_RFCM, PID_YawAngle, PID_YawSpeed, PID_Fx, PID_Fy, PID_T, PID_Power;
 __HANDLE_EXT uint8_t          PigeonCurrent, PigeonVoltage, PigeonEnergy, PigeonChargeEnable;
 
 // 通讯协议
