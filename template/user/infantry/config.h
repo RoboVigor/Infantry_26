@@ -11,7 +11,7 @@
 #define ROBOT_SHARK (Robot_Id == 3)
 
 //裁判系统启用
-#define fricEnabled 0
+#define fricEnabled 1
 
 // 调试
 #define DEBUG_ENABLED 0          // 调试开关
