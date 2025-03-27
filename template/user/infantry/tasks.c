@@ -130,7 +130,7 @@ void Task_Gimbal(void *Parameters) {
 		else if (ControlMode==2)
 		{
         yawAngleTargetControl = -mouseData.x * 0.5 * interval; // 0.005
-        pitchAngleTargetControl = -mouseData.y * 0.8 * interval;
+        pitchAngleTargetControl = mouseData.y * 0.1 * interval;
 		}
         yawAngleTarget += yawAngleTargetControl;
         pitchAngleTarget += pitchAngleTargetControl;
@@ -156,6 +156,12 @@ void Task_Gimbal(void *Parameters) {
                 Motor_Set_Angle_Bias(&Motor_Pitch, Motor_Pitch.angle);
                 pitchInit = 1;
             }
+        }
+
+        if(!Motor_Pitch.online){
+            pitchRampProgress = 0;
+            pitchRampStart = Gyroscope_EulerData.pitch;
+            pitchInit = 0;
         }
  
         // 计算PID
