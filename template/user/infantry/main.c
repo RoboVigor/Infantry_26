@@ -69,6 +69,7 @@ int main(void) {
 
     // Calibration
     Motor_Set_Angle_Bias(&Motor_Yaw, 95);
+    Motor_Set_Angle_Bias(&Motor_Pitch, 0);
     Gyroscope_Set_Bias(&ImuData, 30, 4, -7);
 
 

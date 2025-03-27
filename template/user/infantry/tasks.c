@@ -23,7 +23,7 @@ void Task_Control(void *Parameters) {
 					
             // unused
             // FastShootMode = StirEnabled;
-            // PsShootEnabled = 0;
+            PsShootEnabled = 0;
             SwingMode     = LEFT_SWITCH_MIDDLE && RIGHT_SWITCH_MIDDLE;
             SafetyMode = LEFT_SWITCH_TOP && RIGHT_SWITCH_TOP;
         } else if (ControlMode == 2) {
@@ -105,13 +105,11 @@ void Task_Gimbal(void *Parameters) {
     PID_Init(&PID_Cloud_YawAngle, 7, 1, 0, 4000, 10);
     PID_Init(&PID_Cloud_YawSpeed, 270, 2, 0, 23000, 40);
     PID_Init(&PID_Cloud_PitchAngle, 10, 0, 0, 16000, 1000);
-    PID_Init(&PID_Cloud_PitchSpeed, 45, 1, 0, 16000, 10000);
+    PID_Init(&PID_Cloud_PitchSpeed, 70, 1, 0, 16000, 10000);
     PID_Init(&PID_Cloud_MotorYawSpeed, 3, 1, 0, 23000, 0);
 
     while (1) {
         // 重置目标
-        // yawAngleTarget   = 0;
-        // pitchAngleTarget = 0;
         yawAngleTargetControl = 0;
         pitchAngleTargetControl = 0;
 
@@ -119,7 +117,7 @@ void Task_Gimbal(void *Parameters) {
         yawAngle     = Gyroscope_EulerData.yaw;    // 逆时针为正
         yawSpeed     = Gyroscope_EulerData.yawSpeed;      // 逆时针为正
         pitchAngle   = Gyroscope_EulerData.pitch;  // 
-        pitchSpeed   = abs((int)Gyroscope_EulerData.pitchSpeed) > 35 ? Motor_Pitch.speed : Gyroscope_EulerData.pitchSpeed; // 
+        pitchSpeed   = abs((int)Gyroscope_EulerData.pitchSpeed) > 20 ? Motor_Pitch.speed : Gyroscope_EulerData.pitchSpeed; // 
         chassisAngle = - Motor_Pitch.angle + pitchAngle; //计算底盘的旋转角度，此处要求一点，电机角度和imu要保持一致
         motorYawSpeed = Motor_Yaw.speed*RPM2RPS;
 
@@ -131,8 +129,8 @@ void Task_Gimbal(void *Parameters) {
 		}
 		else if (ControlMode==2)
 		{
-        yawAngleTargetControl = mouseData.x * 0.5 * interval; // 0.005
-        pitchAngleTargetControl = mouseData.y * 0.8 * interval;
+        yawAngleTargetControl = -mouseData.x * 0.5 * interval; // 0.005
+        pitchAngleTargetControl = -mouseData.y * 0.8 * interval;
 		}
         yawAngleTarget += yawAngleTargetControl;
         pitchAngleTarget += pitchAngleTargetControl;
@@ -151,39 +149,40 @@ void Task_Gimbal(void *Parameters) {
 
         // 开机时pitch轴匀速抬起
         if(!pitchInit){
-            if(Motor_Pitch.angleBiasInit) Motor_Pitch.angleBias = 0;
-            Motor_Set_Angle_Bias(&Motor_Pitch,  pitchAngle);
-            pitchInit = 1;
+            pitchAngleTarget = RAMP(pitchRampStart, 0, pitchRampProgress);
+            if (pitchRampProgress < 1) {
+            pitchRampProgress += 0.005f;  
+            }else {
+                Motor_Set_Angle_Bias(&Motor_Pitch, Motor_Pitch.angle);
+                pitchInit = 1;
+            }
         }
-        pitchAngleTarget = RAMP(pitchRampStart, 0, pitchRampProgress);
-        if (pitchRampProgress < 1) {
-        pitchRampProgress += 0.005f;  
-        }
-
+ 
         // 计算PID
         PID_Calculate(&PID_Cloud_YawAngle, yawAngleTarget, Gyroscope_EulerData.yaw);
         PID_Calculate(&PID_Cloud_YawSpeed, PID_Cloud_YawAngle.output, yawSpeed);
         PID_Calculate(&PID_Cloud_PitchAngle, pitchAngleTarget, pitchAngle);
         PID_Calculate(&PID_Cloud_PitchSpeed, PID_Cloud_PitchAngle.output, pitchSpeed);
-        PID_Calculate(&PID_Cloud_MotorYawSpeed, ChassisData.realvw, 1*motorYawSpeed);
+        PID_Calculate(&PID_Cloud_MotorYawSpeed, -1 *ChassisData.realvw, motorYawSpeed);
 
 
         // 输出电流
         if(SwingMode){
-            yawCurrent = (1 - pow(2.71828, -2.23*abs(PID_Cloud_YawAngle.error)))*PID_Cloud_YawSpeed.output + pow(2.71828, -2.23*abs(PID_Cloud_YawAngle.error)) * PID_Cloud_MotorYawSpeed.output;   //动态权重融合
+            yawCurrent = PID_Cloud_YawSpeed.output;
+            // yawCurrent = (1 - pow(2.71828, -2.23*abs(PID_Cloud_YawAngle.error)))*PID_Cloud_YawSpeed.output + pow(2.71828, -2.23*abs(PID_Cloud_YawAngle.error)) * PID_Cloud_MotorYawSpeed.output;   //动态权重融合
         }else{
             yawCurrent = PID_Cloud_YawSpeed.output;
         }
         pitchCurrent = PID_Cloud_PitchSpeed.output; //-8500 * cos((pitchAngle * PI /180.0f))
         Motor_Yaw.input   = yawCurrent;
         Motor_Pitch.input = pitchCurrent;
-        // VofaData->debug1 = yawCurrent;
-        // VofaData->debug2 = yawAngleTarget;
-        // VofaData->debug4 = PID_Cloud_YawAngle.output;
-        // VofaData->debug3 = yawAngle;
-        // VofaData->debug5 = PID_Cloud_YawAngle.error;
-        // VofaData->debug6 = yawAngleTargetControl;
+        // VofaData->debug1 = pitchCurrent;
 
+        // VofaData->debug4 = PID_Cloud_PitchAngle.output;
+        // VofaData->debug3 = pitchAngle;
+        // VofaData->debug5 = PID_Cloud_PitchAngle.error;
+        VofaData->debug6 = pitchAngleTarget;
+        
 
         //任务间隔
         vTaskDelayUntil(&LastWakeTime, intervalms);
@@ -305,8 +304,8 @@ void Task_Chassis(void *Parameters) {
             } else if (yRampProgress > 0.5 && yRampProgress < 1) {
                 yRampProgress += 0.002f;
             }
-			vx = (keyboardData.A - keyboardData.D) * xTargetRamp / 660.0f * 7;
-			vy = (keyboardData.W - keyboardData.S) * yTargetRamp / 660.0f * 7;
+			vy = (keyboardData.A - keyboardData.D) * xTargetRamp / 660.0f * 12;
+			vx = (keyboardData.W - keyboardData.S) * yTargetRamp / 660.0f * 8;
 		}            
 
         if (keyboardData.W == 0 && keyboardData.S == 0) {
@@ -331,7 +330,11 @@ void Task_Chassis(void *Parameters) {
             PID_Calculate(&PID_Follow_Angle, 0, -fbAngle);
             if(abs((int)PID_Follow_Angle.error) > followDeadRegion) {
                 PID_Calculate(&PID_Follow_Speed, PID_Follow_Angle.output, ChassisData.realvw); //此处本质是为了让已有速度前馈下还存在的error进行一个速度小补偿，此处的速度环pid仅作scalar的作用并无反馈
-                vw += PID_Follow_Speed.output * DPS2RPS;
+                // if(Motor_Yaw.online) {
+                    vw += PID_Follow_Speed.output * DPS2RPS;
+                // }else {
+                    // vw = 0;
+                // }
             }
             // VofaData->debug1 = 0;
             // VofaData->debug2 = fbAngle;
@@ -369,7 +372,7 @@ void Task_Chassis(void *Parameters) {
         Chassis_Update(&ChassisData, vx, vy, vwRamp); // 更新麦轮转速
         Chassis_Fix(&ChassisData, motorAngle);        // 修正旋转后底盘的前进方向
         Chassis_Calculate_Rotor_Speed(&ChassisData);  // 麦轮解算
-        VofaData->debug1 = motorAngle;
+        // VofaData->debug1 = motorAngle;
 
         PID_Calculate(&PID_Fx, vx, ChassisData.realvx);
         PID_Calculate(&PID_Fy, vy, ChassisData.realvy);
@@ -583,12 +586,12 @@ void Task_Fire_Stir(void *Parameters) {
             shootMode = shootIdle;
         }
 		
-		/*
+		
 		
         // 控制拨弹轮
         if (shootMode == shootIdle) {
             // 停止
-            Motor_Stir.input = 0;
+            stirSpeed = 0;
 //						targetSpeed = 0;
 //						PID_Calculate(&PID_FireL, targetSpeed, Motor_FL.speed);
 //						PID_Calculate(&PID_FireR, -1*targetSpeed, Motor_FR.speed);
@@ -597,8 +600,7 @@ void Task_Fire_Stir(void *Parameters) {
 
         } else if (shootMode == shootToDeath) {
             // 连发
-            PID_Calculate(&PID_StirSpeed, stirSpeed, Motor_Stir.speed * RPM2RPS);
-            Motor_Stir.input = PID_StirSpeed.output;
+            stirSpeed = 330;
 //						targetSpeed = 1000;
 //						PID_Calculate(&PID_FireL, targetSpeed, Motor_FL.speed);
 //						PID_Calculate(&PID_FireR, targetSpeed, Motor_FR.speed);
@@ -606,8 +608,8 @@ void Task_Fire_Stir(void *Parameters) {
 //						Motor_FL.input = -1*PID_FireL.output;
 //						Motor_FR.input = 1*PID_FireR.output;
         }
-		*/
-		stirSpeed=0;
+		
+		// stirSpeed=0;
 		
         PID_Calculate(&PID_StirSpeed, stirSpeed, Motor_Stir.speed * RPM2RPS);
         Motor_Stir.input = PID_StirSpeed.output;
@@ -708,9 +710,9 @@ void Task_Fire_Frict(void *Parameters) {
 //			Motor_FL.input = PID_FireL.output;
 //			Motor_FR.input = PID_FireR.output;
 //        }
-		targetSpeed = 0;
-		PID_Calculate(&PID_FireL, -1*targetSpeed, Motor_FL.speed);
-		PID_Calculate(&PID_FireR, targetSpeed, Motor_FR.speed);
+		targetSpeed = 000;
+		PID_Calculate(&PID_FireL, targetSpeed, Motor_FL.speed);
+		PID_Calculate(&PID_FireR, -1 *targetSpeed, Motor_FR.speed);
 		Motor_FL.input = PID_FireL.output;
 		Motor_FR.input = PID_FireR.output;
 		
