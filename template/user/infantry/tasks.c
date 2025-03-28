@@ -158,11 +158,11 @@ void Task_Gimbal(void *Parameters) {
             }
         }
 
-        if(!Motor_Pitch.online){
-            pitchRampProgress = 0;
-            pitchRampStart = Gyroscope_EulerData.pitch;
-            pitchInit = 0;
-        }
+        // if(!Motor_Pitch.online){
+        //     pitchRampProgress = 0;
+        //     pitchRampStart = Gyroscope_EulerData.pitch;
+        //     pitchInit = 0;
+        // }
  
         // 计算PID
         PID_Calculate(&PID_Cloud_YawAngle, yawAngleTarget, Gyroscope_EulerData.yaw);
