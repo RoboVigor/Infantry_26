@@ -1398,3 +1398,17 @@ uint8_t Is_Button_Pressed(void) {
     return !GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_0);
 #endif
 }
+
+void BSP_IWDG_Init(){
+#ifdef STM32F427_437xx
+    IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+    IWDG_SetPrescaler(IWDG_Prescaler_32);
+    IWDG_SetReload(3999);
+    IWDG_ReloadCounter();
+    IWDG_Enable();
+#endif 
+}
+
+void BSP_IWDG_Feed(){
+    IWDG_ReloadCounter();
+}

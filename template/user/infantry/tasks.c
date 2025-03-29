@@ -45,6 +45,9 @@ void Task_Control(void *Parameters) {
             if (keyboardData.C) {
                 SwingMode = 1;
             } 
+            if(keyboardData.V){
+                SwingMode = 0;
+            }
             // 高射速模式
             if(keyboardData.E) ShootMode = fastShoot;
             //高速移动模式(关闭底盘功率上限，飞坡用)
@@ -105,7 +108,7 @@ void Task_Gimbal(void *Parameters) {
     PID_Init(&PID_Cloud_YawAngle, 7, 1, 0, 4000, 10);
     PID_Init(&PID_Cloud_YawSpeed, 270, 2, 0, 23000, 40);
     PID_Init(&PID_Cloud_PitchAngle, 10, 0, 0, 16000, 1000);
-    PID_Init(&PID_Cloud_PitchSpeed, 70, 1, 0, 16000, 10000);
+    PID_Init(&PID_Cloud_PitchSpeed, 65, 1, 5,  20000, 16000);
     PID_Init(&PID_Cloud_MotorYawSpeed, 3, 1, 0, 23000, 0);
 
     while (1) {
@@ -130,10 +133,11 @@ void Task_Gimbal(void *Parameters) {
 		else if (ControlMode==2)
 		{
         yawAngleTargetControl = -mouseData.x * 0.5 * interval; // 0.005
-        pitchAngleTargetControl = mouseData.y * 0.1 * interval;
+        pitchAngleTargetControl = mouseData.y * 0.3 * interval;
 		}
         yawAngleTarget += yawAngleTargetControl;
         pitchAngleTarget += pitchAngleTargetControl;
+
 
         // 视觉辅助
         yawAngleTargetPs = HostAutoaimData.yaw_angle_diff;
@@ -146,7 +150,6 @@ void Task_Gimbal(void *Parameters) {
         // 限制云台运动范围即斜坡补偿
         MIAO(pitchAngleTarget, GIMBAL_PITCH_MIN + chassisAngle, GIMBAL_PITCH_MAX + chassisAngle);;  
 
-
         // 开机时pitch轴匀速抬起
         if(!pitchInit){
             pitchAngleTarget = RAMP(pitchRampStart, 0, pitchRampProgress);
@@ -157,6 +160,8 @@ void Task_Gimbal(void *Parameters) {
                 pitchInit = 1;
             }
         }
+
+
 
         // if(!Motor_Pitch.online){
         //     pitchRampProgress = 0;
@@ -186,7 +191,8 @@ void Task_Gimbal(void *Parameters) {
 
         // VofaData->debug4 = PID_Cloud_PitchAngle.output;
         // VofaData->debug3 = pitchAngle;
-        // VofaData->debug5 = PID_Cloud_PitchAngle.error;
+        // VofaData->debug5 = yawAngleTarget;
+        VofaData->debug5 = pitchAngle;
         VofaData->debug6 = pitchAngleTarget;
         
 
@@ -280,7 +286,7 @@ void Task_Chassis(void *Parameters) {
         switch (SwingMode)
         {
         case 1:
-            swingSpeed = 20 * RPM2RPS;
+            swingSpeed = 80 * RPM2RPS;
             swingModeEnabled = 1;
             break;
         
@@ -300,15 +306,15 @@ void Task_Chassis(void *Parameters) {
         } else if (ControlMode == 2) {
             xTargetRamp = RAMP(xRampStart, 660, xRampProgress);
             if (xRampProgress <= 0.5) {
-                xRampProgress += 0.002f;
+                xRampProgress += 0.1f;
             } else if (xRampProgress > 0.5 && xRampProgress < 1) {
-                xRampProgress += 0.001f;
+                xRampProgress += 0.05f;
             }
             yTargetRamp = RAMP(yRampStart, 660, yRampProgress);
             if (yRampProgress <= 0.5) {
-                yRampProgress += 0.004f;
+                yRampProgress += 0.1f;
             } else if (yRampProgress > 0.5 && yRampProgress < 1) {
-                yRampProgress += 0.002f;
+                yRampProgress += 0.05f;
             }
 			vy = (keyboardData.A - keyboardData.D) * xTargetRamp / 660.0f * 12;
 			vx = (keyboardData.W - keyboardData.S) * yTargetRamp / 660.0f * 8;
@@ -364,6 +370,7 @@ void Task_Chassis(void *Parameters) {
         case frictMove:
             PID_Calculate(&PID_Power, 40, ProtocolData.powerHeatData.chassis_power_buffer);
             targetPower = ProtocolData.gameRobotstatus.chassis_power_limit - PID_Power.output;
+            VofaData->debug1 = ProtocolData.powerHeatData.chassis_power_buffer;
             break;
         
         case fastMove:
@@ -371,7 +378,7 @@ void Task_Chassis(void *Parameters) {
             break;
 
         default:
-            targetPower = 50;
+            targetPower = 80;
             break;
         }
 
@@ -430,6 +437,8 @@ void Task_Host(void *Parameters) {
     uint16_t refereePower = 0;
     uint8_t sendBuffer[8] = {0,0,0,0,0x12,0x20,0x12,0x07};
     while (1) {
+
+        //SuperCap
         if(fricEnabled){
         targetPower =  ProtocolData.gameRobotstatus.chassis_power_limit - 10; //留点余量；
         }else
@@ -607,6 +616,9 @@ void Task_Fire_Stir(void *Parameters) {
         } else if (shootMode == shootToDeath) {
             // 连发
             stirSpeed = 330;
+            if(mouseData.pressRight){
+                stirSpeed = 400;
+            }
 //						targetSpeed = 1000;
 //						PID_Calculate(&PID_FireL, targetSpeed, Motor_FL.speed);
 //						PID_Calculate(&PID_FireR, targetSpeed, Motor_FR.speed);
@@ -716,9 +728,9 @@ void Task_Fire_Frict(void *Parameters) {
 //			Motor_FL.input = PID_FireL.output;
 //			Motor_FR.input = PID_FireR.output;
 //        }
-		targetSpeed = 000;
+		targetSpeed = -4000;
 		PID_Calculate(&PID_FireL, targetSpeed, Motor_FL.speed);
-		PID_Calculate(&PID_FireR, -1 *targetSpeed, Motor_FR.speed);
+		PID_Calculate(&PID_FireR, -2*targetSpeed, Motor_FR.speed);
 		Motor_FL.input = PID_FireL.output;
 		Motor_FR.input = PID_FireR.output;
 		
@@ -802,5 +814,20 @@ void Task_Wait(void *Parameters)
 		
 		vTaskDelayUntil(&LastWakeTime,120);
 	}
+	vTaskDelete(NULL);
+}
+
+void Task_IWDG(void *Parameters){
+    TickType_t LastWakeTime = xTaskGetTickCount(); // 时钟
+    float      interval     = 0.1;                // 任务运行间隔 s
+    int        intervalms   = interval * 1000;     // 任务运行间隔 ms
+
+    while (1)
+    {
+        //IWDG
+        BSP_IWDG_Feed();
+        vTaskDelayUntil(&LastWakeTime,intervalms);
+        /* code */
+    }
 	vTaskDelete(NULL);
 }

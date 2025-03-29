@@ -11,15 +11,15 @@
 #define ROBOT_SHARK (Robot_Id == 3)
 
 //裁判系统启用
-#define fricEnabled 1
+#define fricEnabled 0
 
 // 调试
 #define DEBUG_ENABLED 0          // 调试开关
 #define SERIAL_DEBUG_PORT USART6 // 串口调试端口
 
 // 运动参数
-#define GIMBAL_PITCH_MIN -35
-#define GIMBAL_PITCH_MAX 35
+#define GIMBAL_PITCH_MIN -15
+#define GIMBAL_PITCH_MAX 28
 #define CHASSIS_ROTOR_SPEED 550
 
 // 底盘配置

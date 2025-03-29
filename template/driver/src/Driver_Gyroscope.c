@@ -42,6 +42,7 @@ void Gyroscope_Init(GyroscopeData_Type *GyroscopeData, uint16_t startupDelay) {
 #ifdef STM32F427_437xx
         beta = 5;
         while (1) {
+            // BSP_IWDG_Feed();
             LED_Set_Progress(GyroscopeData->startupCounter / (startupDelay / 7) + 1);
             if (GyroscopeData->startupCounter >= startupDelay) {
                 beta = 0.1;

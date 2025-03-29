@@ -13,5 +13,6 @@ void Task_Control(void *Parameters);
 void Task_Can_Send(void *Parameters);
 void Task_Host(void *Parameters);
 void Task_Wait(void *Parameters);
+void Task_IWDG(void *Parameters);
 
 #endif
