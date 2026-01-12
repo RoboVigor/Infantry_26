@@ -152,7 +152,6 @@ float Chassis_Calculate_Power_Limit(float* motorCurrentOutput, int16_t* MCO_With
             }
         }
     }
-    VofaData->debug2 =totalPower;
     float aveSpeed = 0;
     for(int i = 0; i < 4; i++) {
         aveSpeed += ABS(realMotorSpeed[i]);

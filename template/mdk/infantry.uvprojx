@@ -340,7 +340,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>STM32F427_437xx,USE_STDPERIPH_DRIVER,ROBOT_LOOP_ONE.__TARGET_FPU_CM4,ARM_MATH_CM4,__CC_ARM</Define>
               <Undefine></Undefine>
-              <IncludePath>..\core;..\bsp\inc;..\driver\inc;..\library\std\inc;..\user;..\library\freertos\include;..\library\freertos\portable\RVDS\ARM_CM4F;..\user\common;..\library\atom\delay;..\library\atom\sys;..\library\atom\usart;..\library\atom\debug;..\library\mpu6500;..\user\infantry;..\library\vegmath;..\user\common;..\device\inc</IncludePath>
+              <IncludePath>..\core;..\bsp\inc;..\driver\inc;..\library\std\inc;..\user;..\library\freertos\include;..\library\freertos\portable\RVDS\ARM_CM4F;..\user\common;..\library\atom\delay;..\library\atom\sys;..\library\atom\usart;..\library\atom\debug;..\library\mpu6500;..\user\infantry;..\library\vegmath;..\user\common;..\device\inc;..\library\ekf</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -503,6 +503,36 @@
               <FileName>usart.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\library\atom\usart\usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>gyro_bias_estimator.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\ekf\gyro_bias_estimator.c</FilePath>
+            </File>
+            <File>
+              <FileName>orientation_ekf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\ekf\orientation_ekf.c</FilePath>
+            </File>
+            <File>
+              <FileName>low_pass_filter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\ekf\low_pass_filter.c</FilePath>
+            </File>
+            <File>
+              <FileName>matrix3x3d.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\ekf\matrix3x3d.c</FilePath>
+            </File>
+            <File>
+              <FileName>so3_helper.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\ekf\so3_helper.c</FilePath>
+            </File>
+            <File>
+              <FileName>vector3d.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\ekf\vector3d.c</FilePath>
             </File>
           </Files>
         </Group>

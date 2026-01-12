@@ -1,4 +1,7 @@
 #include "Driver_Vofa.h"
+
+static uint8_t buffer[sizeof(debug_info_t)];
+
 void Task_Vofa_Send(void * Parameters){
   TickType_t LastWakeTime = xTaskGetTickCount();
   ProtocolInfo_Type *protocolInfo = Parameters;

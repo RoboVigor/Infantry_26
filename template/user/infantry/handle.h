@@ -10,6 +10,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "semphr.h"
+#include "event_groups.h"
 #include "vegmath.h"
 #include "Driver_BSP.h"
 #include "Driver_Filter.h"
@@ -71,6 +73,7 @@ __HANDLE_EXT Mouse_Type    mouseData;
 // 陀螺仪
 __HANDLE_EXT volatile ImuData_Type       ImuData;
 __HANDLE_EXT volatile GyroscopeData_Type Gyroscope_EulerData;
+__HANDLE_EXT SemaphoreHandle_t ImuDataReady;
 
 // 调试数据
 __HANDLE_EXT DebugData_Type *DebugData;
@@ -97,10 +100,14 @@ __HANDLE_EXT PWM_Type PWM_Test;
 
 // CAN
 __HANDLE_EXT Bridge_Type BridgeData;
+
 /**
  * @brief 初始化结构体
  * @note 该函数将在所有硬件及任务初始化之前执行
  */
 void Handle_Init(void);
+
+// 初始化事件组，用于需要各类需要先初始化的业务且刚需放置再rtos中进行，保证初始化完成才正常进入到完整控制系统中
+__HANDLE_EXT EventGroupHandle_t InitEventGroup;
 
 #endif

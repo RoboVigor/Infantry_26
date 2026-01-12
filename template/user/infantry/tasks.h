@@ -14,5 +14,6 @@ void Task_Can_Send(void *Parameters);
 void Task_Host(void *Parameters);
 void Task_Wait(void *Parameters);
 void Task_IWDG(void *Parameters);
+void Task_Imu(void *Parameters);
 
 #endif

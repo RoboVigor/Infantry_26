@@ -18,6 +18,8 @@
 #include "BMI088driver.h"
 #include "ist8310driver.h"
 #endif
+#include "orientation_ekf.h"
+#include "gyro_bias_estimator.h"
 
 #define PI 3.141592653589793f
 
@@ -90,7 +92,7 @@ void Gyroscope_Set_Bias(ImuData_Type *ImuData, int16_t gx_bias, int16_t gy_bias,
  * @brief 坐标系转换
  * 
  */
-void Gyroscope_axis_trans( float *ImuData_temp);
+void Gyroscope_axis_trans( float ImuData_temp[][3]);
 
 void Gyroscope_Calculate_angleSpeed(GyroscopeData_Type *gd, float yaw, float pitch, float roll);
 

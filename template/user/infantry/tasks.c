@@ -8,6 +8,7 @@
 int qian = 0 ,zuo = 0 ;
 
 void Task_Control(void *Parameters) {
+    xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY); 
     TickType_t LastWakeTime = xTaskGetTickCount();
     //LASER_ON;
 
@@ -63,6 +64,7 @@ void Task_Control(void *Parameters) {
 }
 
 void Task_Can_Send(void *Parameters) {
+    xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY); 
     TickType_t LastWakeTime = xTaskGetTickCount(); // 时钟
     float      interval     = 0.01;                // 任务运行间隔 s
     int        intervalms   = interval * 1000;     // 任务运行间隔 ms
@@ -74,6 +76,7 @@ void Task_Can_Send(void *Parameters) {
 }
 
 void Task_Gimbal(void *Parameters) {
+    xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY); 
     // 任务
     TickType_t LastWakeTime = xTaskGetTickCount(); // 时钟
     float      interval     = 0.005;               // 任务运行间隔 s
@@ -187,14 +190,6 @@ void Task_Gimbal(void *Parameters) {
         pitchCurrent = PID_Cloud_PitchSpeed.output; //-8500 * cos((pitchAngle * PI /180.0f))
         Motor_Yaw.input   = yawCurrent;
         Motor_Pitch.input = pitchCurrent;
-        // VofaData->debug1 = pitchCurrent;
-
-        // VofaData->debug4 = PID_Cloud_PitchAngle.output;
-        // VofaData->debug3 = pitchAngle;
-        // VofaData->debug5 = yawAngleTarget;
-        VofaData->debug5 = pitchAngle;
-        VofaData->debug6 = pitchAngleTarget;
-        
 
         //任务间隔
         vTaskDelayUntil(&LastWakeTime, intervalms);
@@ -203,6 +198,7 @@ void Task_Gimbal(void *Parameters) {
 }
 
 void Task_Chassis(void *Parameters) {
+    xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY); 
     // 任务
     TickType_t LastWakeTime = xTaskGetTickCount(); // 时钟
     float      interval     = 0.005;               // 任务运行间隔 s
@@ -370,7 +366,6 @@ void Task_Chassis(void *Parameters) {
         case frictMove:
             PID_Calculate(&PID_Power, 40, ProtocolData.powerHeatData.chassis_power_buffer);
             targetPower = ProtocolData.gameRobotstatus.chassis_power_limit - PID_Power.output;
-            VofaData->debug1 = ProtocolData.powerHeatData.chassis_power_buffer;
             break;
         
         case fastMove:
@@ -385,7 +380,6 @@ void Task_Chassis(void *Parameters) {
         Chassis_Update(&ChassisData, vx, vy, vwRamp); // 更新麦轮转速
         Chassis_Fix(&ChassisData, motorAngle);        // 修正旋转后底盘的前进方向
         Chassis_Calculate_Rotor_Speed(&ChassisData);  // 麦轮解算
-        // VofaData->debug1 = motorAngle;
 
         PID_Calculate(&PID_Fx, vx, ChassisData.realvx);
         PID_Calculate(&PID_Fy, vy, ChassisData.realvy);
@@ -404,7 +398,7 @@ void Task_Chassis(void *Parameters) {
         motorCurrentOutput[3] = PID_RFCM.output * CurrentMap_C620;
 
         Chassis_Current_Output_Integrate(motorCurrentOutput, &ChassisData);
-        VofaData->debug0 =  Chassis_Calculate_Power_Limit(motorCurrentOutput, MCO_With_PowerLimit, realMotorSpeed, targetPower);
+        Chassis_Calculate_Power_Limit(motorCurrentOutput, MCO_With_PowerLimit, realMotorSpeed, targetPower);
 
         // 输出电流值到电调 功率限制已修改完成
         Motor_LF.input = MCO_With_PowerLimit[0];
@@ -426,6 +420,7 @@ void Task_Chassis(void *Parameters) {
 }
 
 void Task_Host(void *Parameters) {
+    xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY); 
     TickType_t         LastWakeTime = xTaskGetTickCount();
     ProtocolInfo_Type *protocolInfo;
     int16_t            lastReceiveSeq = 0;
@@ -524,6 +519,7 @@ void Task_Host(void *Parameters) {
  */
 
 void Task_Fire_Stir(void *Parameters) {
+    xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY); 
     TickType_t LastWakeTime = xTaskGetTickCount(); // 时钟
     float      interval     = 0.05;                // 任务运行间隔 s
     int        intervalms   = interval * 1000;
@@ -643,6 +639,7 @@ void Task_Fire_Stir(void *Parameters) {
 }
 
 void Task_Fire_Frict(void *Parameters) {
+    xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY);    
     TickType_t LastWakeTime = xTaskGetTickCount(); // 时钟
     float      interval     = 0.05;                // 任务运行间隔 s
     int        intervalms   = interval * 1000;     // 任务运行间隔 ms
@@ -830,4 +827,27 @@ void Task_IWDG(void *Parameters){
         /* code */
     }
 	vTaskDelete(NULL);
+}
+
+void Task_Imu(void *Parameters){
+    ImuDataReady = xSemaphoreCreateBinary();
+    configASSERT(ImuDataReady != NULL);
+    BSP_IMU_Init();
+    Gyroscope_Init(&Gyroscope_EulerData, 0);
+    uint16_t counter = 1000;
+    while (1)
+    {   
+        if(xSemaphoreTake(ImuDataReady,portMAX_DELAY) == pdTRUE){
+            Gyroscope_Update(&Gyroscope_EulerData);
+            if (!counter)
+            {
+                continue;
+            }
+            
+        }
+
+        if(!(--counter)){
+            xEventGroupSetBits(InitEventGroup, INIT_EVENT_IMU);
+        }
+    }
 }

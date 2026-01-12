@@ -49,7 +49,7 @@ int main(void) {
     BSP_CAN_Init();
     BSP_DBUS_Init(remoteBuffer);
     BSP_TIM2_Init();
-    BSP_IMU_Init();
+    // BSP_IMU_Init();
     BSP_Laser_Init();
     BSP_Beep_Init();
     BSP_LED_Init();
@@ -70,7 +70,7 @@ int main(void) {
     // Calibration
     Motor_Set_Angle_Bias(&Motor_Yaw, 95);
     Motor_Set_Angle_Bias(&Motor_Pitch, 0);
-    Gyroscope_Set_Bias(&ImuData, 30, 4, -7);
+    // Gyroscope_Set_Bias(&ImuData, 30, 4, -7);
 
 
     // 总线设置
@@ -93,36 +93,42 @@ int main(void) {
     Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x500, &Node_SuperCap);
 
     // 陀螺仪
-    Gyroscope_Init(&Gyroscope_EulerData, 300); // 初始化
+    // Gyroscope_Init(&Gyroscope_EulerData, 300); // 初始化
 
     //绑定debug指针
     VofaData = &(ProtocolData.debugInfo.vofaData);
     DebugData = &(ProtocolData.debugInfo.debugData);
+
+    // 安全延时
+    delay_ms(500);
 
     /*******************************************************************************
      *                                 任务初始化                                   *
      *******************************************************************************/
 
     // 等待遥控器开启
-    while (!remoteData.state) {
-    }
+    // while (!remoteData.state) {
+    // }
     xTaskCreate(Task_Blink, "Task_Blink", 400, NULL, 3, NULL);
     // xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
     //模式切换任务
-    xTaskCreate(Task_Control, "Task_Control", 400, NULL, 9, NULL);
+    xTaskCreate(Task_Control, "Task_Control", 400, NULL, 6, NULL);
 
-    // Can发送任务
-    xTaskCreate(Task_Can_Send, "Task_Can_Send", 500, NULL, 5, NULL);
+    // // Can发送任务
+    xTaskCreate(Task_Can_Send, "Task_Can_Send", 500, NULL, 4, NULL);
 
-    // 运动控制任务
+    // // 运动控制任务
     xTaskCreate(Task_Chassis, "Task_Chassis", 400, NULL, 5, NULL);
     xTaskCreate(Task_Gimbal, "Task_Gimbal", 500, NULL, 5, NULL);
     xTaskCreate(Task_Fire_Stir, "Task_Fire_Stir", 400, NULL, 6, NULL);
     xTaskCreate(Task_Fire_Frict, "Task_Fire_Frict", 400, NULL, 6, NULL);
-	xTaskCreate(Task_Wait,"Task_Wait",400,NULL,5,NULL);
+	// xTaskCreate(Task_Wait,"Task_Wait",400,NULL,5,NULL);
 
     // DMA发送任务
-    xTaskCreate(Task_Host, "Task_Host", 500, NULL, 6, NULL);
+    xTaskCreate(Task_Host, "Task_Host", 500, NULL, 4, NULL);
+
+    // IMU任务
+    xTaskCreate(Task_Imu, "Task_Imu", 400, NULL, 6, NULL);
 
     // 定义协议发送频率
     // Bridge_Send_Protocol(&Node_Host, 0x120, 1);  // 心跳包
@@ -130,7 +136,10 @@ int main(void) {
     
     // debug发送
     // Bridge_Send_Protocol(&Node_Debug, 0x1024, 200);
-    Vofa_Send(200, 200, &Node_Debug, 0x1024);
+    Vofa_Send(20, 100, &Node_Debug, 0x1024);
+
+    // 初始化事件组
+    InitEventGroup = xEventGroupCreate();
 
     //启动调度,开始执行任务
     vTaskStartScheduler();

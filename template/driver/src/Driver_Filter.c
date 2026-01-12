@@ -12,12 +12,13 @@ void Filter_Update(Filter_Type *filter, float value) {
         filter->value     = value;
         filter->lastValue = value;
         filter->result    = value;
-        if (filter->windowSize > 0) {
-            filter->movingAverageArray = malloc(4 * filter->windowSize);
-            for (i = 0; i < filter->windowSize; i++) {
-                *(filter->movingAverageArray + i) = value;
-            }
-        }
+        // 不再使用该窗口滤波，且不在编译。此malloc会导致内存泄漏
+        // if (filter->windowSize > 0) {
+        //     filter->movingAverageArray = malloc(4 * filter->windowSize);
+        //     for (i = 0; i < filter->windowSize; i++) {
+        //         *(filter->movingAverageArray + i) = value;
+        //     }
+        // }
         return;
     }
 
@@ -26,7 +27,7 @@ void Filter_Update(Filter_Type *filter, float value) {
     filter->value     = value;
     filter->diff      = filter->value - filter->lastValue;
     filter->count += 1;
-    *(filter->movingAverageArray + filter->count % filter->windowSize) = value;
+    // *(filter->movingAverageArray + filter->count % filter->windowSize) = value;
 }
 
 void Filter_Update_Sample(Filter_Type *filter) {
