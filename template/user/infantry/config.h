@@ -50,7 +50,7 @@
 #define fastTriangle 1                          // 快速三角函数计算，仅用于imu解算，且下列三个角度必须为PI/2的倍数
 #define angle_x 0                               // 内旋，先绕x轴旋转角度（rad）
 #define angle_y 0                               // 内旋，再绕y轴旋转角度（rad）
-#define angle_z (PI/2)                           // 内旋，最后绕z轴旋转角度（rad）
+#define angle_z (PI)                           // 内旋，最后绕z轴旋转角度（rad）
 #if fastTriangle
   #define f_cos(para) (pow(-1, ((int)((para + PI/2)/PI*2))/2)*abs((int)((para + PI/2)/PI*2)%2))
   #define f_sin(para) (pow(-1, ((int)(para/PI*2))/2)*abs((int)(para/PI*2)%2))

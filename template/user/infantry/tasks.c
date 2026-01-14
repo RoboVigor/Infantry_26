@@ -108,10 +108,10 @@ void Task_Gimbal(void *Parameters) {
     float pitchAngleTargetRamp = 0;
 
     // 初始化云台PID
-    PID_Init(&PID_Cloud_YawAngle, 7, 1, 0, 4000, 10);
-    PID_Init(&PID_Cloud_YawSpeed, 270, 2, 0, 23000, 40);
-    PID_Init(&PID_Cloud_PitchAngle, 10, 0, 0, 16000, 1000);
-    PID_Init(&PID_Cloud_PitchSpeed, 65, 1, 5,  20000, 16000);
+    PID_Init(&PID_Cloud_YawAngle, 3, 0.1, 0, 4000, 10);
+    PID_Init(&PID_Cloud_YawSpeed, 80, 0.01, 0, 23000, 40);
+    PID_Init(&PID_Cloud_PitchAngle, 12, 0, 0, 16000, 1000);
+    PID_Init(&PID_Cloud_PitchSpeed, 100, 0, 0,  20000, 16000);
     PID_Init(&PID_Cloud_MotorYawSpeed, 3, 1, 0, 23000, 0);
 
     while (1) {
@@ -229,8 +229,8 @@ void Task_Chassis(void *Parameters) {
 
     // 底盘跟随PID
     float followDeadRegion = 3.0;
-    PID_Init(&PID_Follow_Angle, 0.5, 0.1, 0, 100, 50);
-    PID_Init(&PID_Follow_Speed, 2, 0, 1, 100, 0);
+    PID_Init(&PID_Follow_Angle, 3, 0.1, 0, 100, 50);
+    PID_Init(&PID_Follow_Speed, 1, 0, 1, 100, 0);
 
     // 速度环PID
     PID_Init(&PID_LFCM, 1, 0, 0, 6000, 0);
@@ -270,6 +270,7 @@ void Task_Chassis(void *Parameters) {
         realMotorSpeed[1] = Motor_LB.speed *RPM2RPS;
         realMotorSpeed[2] = Motor_RB.speed *RPM2RPS;
         realMotorSpeed[3] = Motor_RF.speed *RPM2RPS;
+        VofaData->debug4 = motorAngle;
 
         // 视觉专属follow PID
         if (PsAimEnabled) {
@@ -282,7 +283,7 @@ void Task_Chassis(void *Parameters) {
         switch (SwingMode)
         {
         case 1:
-            swingSpeed = 80 * RPM2RPS;
+            swingSpeed =30 * RPM2RPS;
             swingModeEnabled = 1;
             break;
         
