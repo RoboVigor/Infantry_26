@@ -627,7 +627,7 @@ void Task_Fire_Stir(void *Parameters) {
 		// stirSpeed=0;
 		
         PID_Calculate(&PID_StirSpeed, stirSpeed, Motor_Stir.speed * RPM2RPS);
-        Motor_Stir.input = PID_StirSpeed.output;
+        Motor_Stir.input =  - PID_StirSpeed.output;
 		
 
         // DebugData.debug1 = PID_StirSpeed.output;
