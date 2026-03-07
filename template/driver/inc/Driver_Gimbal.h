@@ -1,0 +1,14 @@
+#ifndef __DRIVER_GIMBAL_H
+#define __DRIVER_GIMBAL_H
+
+#include "Driver_Gyroscope.h"
+
+/* 使用NWU（北西天）坐标系， 对应到车体body系：车体俯视图下，枪管指向方向对齐 +x方向 */
+#define baryCenterX 0      // 矢量，云台重心到旋转轴的水平距离，单位为米
+#define baryCenterZ 0      // 矢量，云台重心到旋转轴的垂直距离，单位为米
+#define gimbalMass 0       // 标量，云台总质量，单位为千克
+
+float getGimbalGravityTorque(GyroscopeData_Type * gyroData);
+
+
+#endif /* __DRIVER_GIMBAL_H */
