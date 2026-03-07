@@ -263,7 +263,7 @@ void Task_Chassis(void *Parameters) {
         // 设置反馈值
         motorAngle  = Motor_Yaw.angle;                                 // 电机角度
         motorSpeed  = Motor_Yaw.speed * RPM2RPS;                       // 电机角速度
-        power       = ProtocolData.powerHeatData.chassis_power;        // 裁判系统功率
+        // power       = ProtocolData.powerHeatData.chassis_power;        // 裁判系统功率
         powerBuffer = ProtocolData.powerHeatData.chassis_power_buffer; // 裁判系统功率缓冲
         targetPower = ProtocolData.gameRobotstatus.chassis_power_limit;// 裁判系统功率限制
         realMotorSpeed[0] = Motor_LF.speed *RPM2RPS;
@@ -489,27 +489,6 @@ void Task_Host(void *Parameters) {
      TickType_t LastWakeTime  = xTaskGetTickCount();
      uint8_t    isInitialized = 0;
      while (1) {
-         //if (isInitialized) {
-            // ProtocolData.client_custom_delete
-            // Bridge_Send_Protocol_Once();
-         //}
-         ProtocolData.client_custom_graphicSingle.data_cmd_id = 0x102;
-         ProtocolData.client_custom_graphicSingle.send_id     = ProtocolData.gameRobotstatus.robot_id;
-         ProtocolData.client_custom_graphicSingle.receiver_id = 0x100 + ProtocolData.gameRobotstatus.robot_id;
-         // graphic 1
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.graphic_name[0] = 'p';
-         //ProtocolData.client_custom_graphicSingle.grapic_data_struct.operate_type       = 1;
-         //ProtocolData.client_custom_graphicSingle.grapic_data_struct.graphic_type       = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.layer              = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.color              = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.start_angle        = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.end_angle          = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.width              = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.start_x            = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.start_y            = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.radius             = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.end_x              = 1;
-         ProtocolData.client_custom_graphicSingle.grapic_data_struct.end_y              = 1;
          vTaskDelayUntil(&LastWakeTime, 20);
      }
      vTaskDelete(NULL);
@@ -564,23 +543,19 @@ void Task_Fire_Stir(void *Parameters) {
         }
         // 拨弹速度
         stirSpeed = 110;
-        if (ProtocolData.gameRobotstatus.shooter_id1_17mm_cooling_rate == 20) {
+        if (ProtocolData.gameRobotstatus.shooter_barrel_cooling_value == 20) {
             stirSpeed = 110;
-        } else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_cooling_rate == 30) {
+        } else if (ProtocolData.gameRobotstatus.shooter_barrel_cooling_value == 30) {
             stirSpeed = 140;
-        } else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_cooling_rate == 40) {
+        } else if (ProtocolData.gameRobotstatus.shooter_barrel_cooling_value == 40) {
             stirSpeed = 160;
         }
-        stirSpeed * 3;
 
-        // stirSpeed = 143; // 热量：120
-        // stirSpeed = 120; // 热量：240
-        // stirSpeed = 120; // 热量：360
 
         // X模式
 
         //热量控制
-        maxShootHeat = ProtocolData.gameRobotstatus.shooter_id1_17mm_cooling_limit - ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit * 2;
+        maxShootHeat = (ProtocolData.gameRobotstatus.shooter_barrel_heat_limit - ProtocolData.powerHeatData.shooter_17mm_barrel_heat) * 0.5;
 
         // 输入射击模式
         shootMode = shootIdle;
@@ -594,7 +569,7 @@ void Task_Fire_Stir(void *Parameters) {
         // }
         // lastSeq = Ps.autoaimData.seq;
 
-        if (ProtocolData.powerHeatData.shooter_id1_17mm_cooling_heat > maxShootHeat) {
+        if (ProtocolData.powerHeatData.shooter_17mm_barrel_heat > maxShootHeat) {
             shootMode = shootIdle;
         }
 		
@@ -665,38 +640,38 @@ void Task_Fire_Frict(void *Parameters) {
         }
 
         if (1) {
-            if (ROBOT_MIAO) {
-								//targetSpeed = 4000;
-                if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 15)
-                    targetSpeed = 4000;
-                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 18)
-                    targetSpeed = 5000;
-                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 22)
-                    targetSpeed = 7000;
-                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 30)
-                    targetSpeed = 1000;								
-//						PID_Calculate(&PID_FireL, -1*targetSpeed, Motor_FL.speed);
-//            PID_Calculate(&PID_FireR, targetSpeed, Motor_FR.speed);
-            } else if (ROBOT_WANG) {
-				//targetSpeed = 1500;
-                if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 15)
-                    targetSpeed = 4500;
-                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 18)
-                    targetSpeed = 4000;
-                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 22)
-                    targetSpeed = 4000;
-                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 30)
-                    targetSpeed = 4000;
-            } else if (ROBOT_SHARK) { //还没测
-							targetSpeed = 10000;
-//                if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 15)
-//                    targetSpeed = 4450;
-//                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 18)
-//                    targetSpeed = 5100;	
-//                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 30)
-//                    targetSpeed = 7700;
+//             if (ROBOT_MIAO) {
+// 								//targetSpeed = 4000;
+//                 if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 15)
+//                     targetSpeed = 4000;
+//                 else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 18)
+//                     targetSpeed = 5000;
+//                 else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 22)
+//                     targetSpeed = 7000;
+//                 else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 30)
+//                     targetSpeed = 1000;								
+// //						PID_Calculate(&PID_FireL, -1*targetSpeed, Motor_FL.speed);
+// //            PID_Calculate(&PID_FireR, targetSpeed, Motor_FR.speed);
+//             } else if (ROBOT_WANG) {
+// 				//targetSpeed = 1500;
+//                 if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 15)
+//                     targetSpeed = 4500;
+//                 else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 18)
+//                     targetSpeed = 4000;
+//                 else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 22)
+//                     targetSpeed = 4000;
+//                 else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 30)
+//                     targetSpeed = 4000;
+//             } else if (ROBOT_SHARK) { //还没测
+// 							targetSpeed = 10000;
+// //                if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 15)
+// //                    targetSpeed = 4450;
+// //                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 18)
+// //                    targetSpeed = 5100;	
+// //                else if (ProtocolData.gameRobotstatus.shooter_id1_17mm_speed_limit == 30)
+// //                    targetSpeed = 7700;
 							
-            }
+//             }
 //			if(ROBOT_SHARK)
 //				{
 //					PID_Calculate(&PID_FireL, targetSpeed, Motor_FL.speed);

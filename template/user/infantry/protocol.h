@@ -1,6 +1,8 @@
 #ifndef __PROTOCOL_H
 #define __PROTOCOL_H
 #include <stdint.h>
+
+#pragma pack(push, 1)
 /**
  * @file    protocol.h
  * @note    本文件由 Node_Bridge 生成, 请勿直接修改
@@ -19,22 +21,6 @@
 /**********************************************************************
  *                              结构体
  **********************************************************************/
-
-typedef struct {
-    uint8_t  graphic_name[3];
-    uint32_t operate_type : 3;
-    uint32_t graphic_type : 3;
-    uint32_t layer : 4;
-    uint32_t color : 4;
-    uint32_t start_angle : 9;
-    uint32_t end_angle : 9;
-    uint32_t width : 10;
-    uint32_t start_x : 11;
-    uint32_t start_y : 11;
-    uint32_t radius : 10;
-    uint32_t end_x : 11;
-    uint32_t end_y : 11;
-} GraphicData_Type;
 
 typedef struct {
     int32_t debug0;
@@ -87,37 +73,20 @@ typedef union {
 
 typedef union {
     struct {
-        uint16_t red_1_robot_HP;
-        uint16_t red_2_robot_HP;
-        uint16_t red_3_robot_HP;
-        uint16_t red_4_robot_HP;
-        uint16_t red_5_robot_HP;
-        uint16_t red_7_robot_HP;
-        uint16_t red_outpost_HP;
-        uint16_t red_base_HP;
-        uint16_t blue_1_robot_HP;
-        uint16_t blue_2_robot_HP;
-        uint16_t blue_3_robot_HP;
-        uint16_t blue_4_robot_HP;
-        uint16_t blue_5_robot_HP;
-        uint16_t blue_7_robot_HP;
-        uint16_t blue_outpost_HP;
-        uint16_t blue_base_HP;
+        uint16_t ally_1_robot_HP;
+        uint16_t ally_2_robot_HP;
+        uint16_t ally_3_robot_HP;
+        uint16_t ally_4_robot_HP;
+        uint16_t reserved;
+        uint16_t ally_7_robot_HP;
+        uint16_t ally_outpost_HP;
+        uint16_t ally_base_HP;
     };
     struct {
-        uint8_t data[32];
+        uint8_t data[16];
     };
 } game_robot_HP_t;
 
-typedef union {
-    struct {
-        uint8_t  dart_belong;
-        uint16_t stage_remaining_time;
-    };
-    struct {
-        uint8_t data[3];
-    };
-} dart_status_t;
 
 typedef union {
     struct {
@@ -129,35 +98,27 @@ typedef union {
 } event_data_t;
 
 typedef union {
-    struct {
-        uint8_t supply_projectile_id;
-        uint8_t supply_robot_id;
-        uint8_t supply_projectile_step;
-        uint8_t supply_projectile_num;
-    };
-    struct {
-        uint8_t data[4];
-    };
-} supply_projectile_action_t;
-
-typedef union {
-    struct {
+    struct 
+   {
         uint8_t level;
-        uint8_t foul_robot_id;
+        uint8_t offending_robot_id;
+        uint8_t count;
+        /* data */
     };
     struct {
-        uint8_t data[2];
+        uint8_t data[3];
     };
 } referee_warning_t;
 
 typedef union {
     struct {
         uint8_t dart_remaining_time;
+        uint16_t dart_info;
     };
     struct {
-        uint8_t data[1];
+        uint8_t data[3];
     };
-} dart_remaining_time_t;
+} dart_info_t;
 
 typedef union {
     struct {
@@ -165,37 +126,29 @@ typedef union {
         uint8_t  robot_level;
         uint16_t remain_HP;
         uint16_t max_HP;
-        uint16_t shooter_id1_17mm_cooling_rate;
-        uint16_t shooter_id1_17mm_cooling_limit;
-        uint16_t shooter_id1_17mm_speed_limit;
-        uint16_t shooter_id2_17mm_cooling_rate;
-        uint16_t shooter_id2_17mm_cooling_limit;
-        uint16_t shooter_id2_17mm_speed_limit;
-        uint16_t shooter_id1_42mm_cooling_rate;
-        uint16_t shooter_id1_42mm_cooling_limit;
-        uint16_t shooter_id1_42mm_speed_limit;
+        uint16_t shooter_barrel_cooling_value;
+        uint16_t shooter_barrel_heat_limit; 
         uint16_t chassis_power_limit;
         uint8_t  mains_power_gimbal_output : 1;
         uint8_t  mains_power_chassis_output : 1;
         uint8_t  mains_power_shooter_output : 1;
     };
     struct {
-        uint8_t data[27];
+        uint8_t data[13];
     };
 } game_robot_status_t;
 
 typedef union {
     struct {
-        uint16_t chassis_volt;
-        uint16_t chassis_current;
-        float    chassis_power;
+        uint16_t reserved_0;
+        uint16_t reserved_1;
+        float    reserved_2;
         uint16_t chassis_power_buffer;
-        uint16_t shooter_id1_17mm_cooling_heat;
-        uint16_t shooter_id2_17mm_cooling_heat;
-        uint16_t shooter_id1_42mm_cooling_heat;
+        uint16_t shooter_17mm_barrel_heat;
+        uint16_t shooter_42mm_barrel_heat;
     };
     struct {
-        uint8_t data[16];
+        uint8_t data[14];
     };
 } power_heat_data_t;
 
@@ -203,20 +156,24 @@ typedef union {
     struct {
         float x;
         float y;
-        float z;
-        float yaw;
+        float angle;
     };
     struct {
-        uint8_t data[16];
+        uint8_t data[12];
     };
 } game_robot_pos_t;
 
 typedef union {
     struct {
-        uint8_t power_rune_buff;
+        uint8_t recovery_buff;
+        uint16_t cooling_buff;
+        uint8_t defence_buff;
+        uint8_t vulnerability_buff;
+        uint16_t attack_buff;
+        uint8_t remaining_energy;
     };
     struct {
-        uint8_t data[1];
+        uint8_t data[8];
     };
 } buff_info_t;
 
@@ -256,111 +213,384 @@ typedef union {
         uint16_t bullet_remaining_num_17mm;
         uint16_t bullet_remaining_num_42mm;
         uint16_t coin_remaining_num;
+        uint16_t projectile_allowance_fortress;
     };
     struct {
-        uint8_t data[6];
+        uint8_t data[8];
     };
 } bullet_remaining_t;
 
 typedef union {
     struct {
         uint32_t rfid_status;
+        uint8_t rfid_status_2;
     };
     struct {
-        uint8_t data[4];
+        uint8_t data[5];
     };
 } rfid_status_t;
 
 typedef union {
     struct {
-        uint8_t  dart_launch_opening_status;
-        uint8_t  dart_attack_target;
+        uint8_t dart_launch_opening_status;
+        uint8_t reserved;
         uint16_t target_change_time;
-        uint8_t  first_dart_speed;
-        uint8_t  second_dart_speed;
-        uint8_t  third_dart_speed;
-        uint8_t  fourth_dart_speed;
-        uint16_t last_dart_launch_time;
-        uint16_t operate_launch_cmd_time;
+        uint16_t latest_launch_cmd_time;
     };
     struct {
-        uint8_t data[12];
+        uint8_t data[6];
     };
 } dart_client_cmd_t;
 
-typedef union {
+typedef union 
+{
+    struct 
+    {   
+        float hero_x;
+        float hero_y;
+        float engineer_x;
+        float engineer_y;
+        float standard_3_x;
+        float standard_3_y;
+        float standard_4_x;
+        float standard_4_y;
+        float reserved_0;
+        float reserved_1;
+        /* data */
+    };
+
+    struct
+    {
+        uint8_t data[40];
+    };
+    
+    /* data */
+} ground_robot_position_t;
+
+typedef union 
+{
+    struct 
+    {
+        uint16_t mark_progress;
+        /* data */
+    };
+    
+    struct
+    {
+        uint8_t data[2];
+    };
+    /* data */
+} radar_mark_data_t;
+
+typedef union 
+{
+    struct 
+    {
+        uint32_t sentry_info;
+        uint16_t sentry_info_2;
+        /* data */
+    };
+    
+    struct 
+    {
+        uint8_t data[6];
+        /* data */
+    };
+    
+    /* data */
+} sentry_info_t;
+
+typedef union 
+{
     struct {
+        uint8_t radar_info;
+    };
+
+    struct {
+        uint8_t data[1];
+    };
+    /* data */
+} radar_info_t;
+
+typedef union
+{
+    struct 
+    {
         uint16_t data_cmd_id;
-        uint16_t send_id;
+        uint16_t sender_id;
         uint16_t receiver_id;
-        uint8_t  operate_type;
-        uint8_t  layer;
+        uint8_t user_data[112];
+        /* data */
     };
-    struct {
-        uint8_t data[8];
+    
+    struct 
+    {
+        uint8_t data[118];
+        /* data */
     };
-} client_custom_graphic_delete_t;
+    
+    /* data */
+} robot_interaction_data_t;
 
-typedef union {
-    struct {
-        uint16_t         data_cmd_id;
-        uint16_t         send_id;
-        uint16_t         receiver_id;
-        GraphicData_Type grapic_data_struct;
+typedef union 
+{
+    struct 
+    {
+        float target_position_x;
+        float target_position_y;
+        uint8_t cmd_keyboard;
+        uint8_t target_robot_id;
+        uint16_t cmd_source;
+        /* data */
     };
-    struct {
-        uint8_t data[21];
+    
+    struct 
+    {
+        uint8_t data[12];
+        /* data */
     };
-} client_custom_graphic_single_t;
+    /* data */
+} map_command_t;
 
-typedef union {
-    struct {
-        uint16_t         data_cmd_id;
-        uint16_t         send_id;
-        uint16_t         receiver_id;
-        GraphicData_Type grapic_data_struct[2];
+typedef union 
+{
+    struct 
+    {
+        uint16_t hero_position_x;
+        uint16_t hero_position_y;
+        uint16_t engineer_position_x;
+        uint16_t engineer_position_y;
+        uint16_t infantry_3_position_x;
+        uint16_t infantry_3_position_y;
+        uint16_t infantry_4_position_x;
+        uint16_t infantry_4_position_y;
+        uint16_t reserved_0;
+        uint16_t reserved_1;
+        uint16_t sentry_position_x;
+        uint16_t sentry_position_y; 
+        /* data */
     };
-    struct {
-        uint8_t data[36];
+    
+    struct 
+    {
+        uint8_t data[24];
+        /* data */
     };
-} client_custom_graphic_double_t;
+    
+    /* data */
+}  map_robo_data_t;
 
-typedef union {
-    struct {
-        uint16_t         data_cmd_id;
-        uint16_t         send_id;
-        uint16_t         receiver_id;
-        GraphicData_Type grapic_data_struct[5];
+typedef union 
+{
+    struct 
+    {
+        uint8_t intention;
+        uint16_t start_posotion_x;
+        uint16_t start_posotion_y;
+        int8_t delta_x[49];
+        int8_t delta_y[49];
+        uint16_t sender_id;
+        /* data */
     };
-    struct {
-        uint8_t data[81];
+    
+    struct 
+    {
+        uint8_t data[105];
+        /* data */
     };
-} client_custom_graphic_five_t;
+    
+    /* data */
+} map_data_t;
 
-typedef union {
-    struct {
-        uint16_t         data_cmd_id;
-        uint16_t         send_id;
-        uint16_t         receiver_id;
-        GraphicData_Type grapic_data_struct;
-        uint8_t          data[30];
+typedef union 
+{
+    struct 
+    {
+        uint16_t sender_id;
+        uint16_t receiver_id;
+        uint8_t user_data[30];
+        /* data */
     };
-    struct {
-        uint8_t data[51];
+    
+    struct 
+    {
+        uint8_t data[34];
+        /* data */
     };
-} client_custom_character_t;
+    /* data */
+} custom_info_t;
 
-typedef union {
-    struct {
-        uint16_t         data_cmd_id;
-        uint16_t         send_id;
-        uint16_t         receiver_id;
-        GraphicData_Type grapic_data_struct[7];
+/**********************************************************************
+ *                              图传链路数据
+ **********************************************************************/
+
+typedef union 
+{
+    struct 
+    {
+        uint8_t data[30];
+        /* data */
     };
-    struct {
-        uint8_t data[111];
+    
+    /* data */
+} custom_robot_data_t;
+
+typedef union 
+{
+    struct 
+    {
+        uint8_t data[30];
+        /* data */
     };
-} client_custom_graphic_seven_t;
+    
+    /* data */
+} robot_custom_data_t;
+
+typedef union 
+{
+    struct 
+    {
+        uint8_t data[300]
+        /* data */
+    };
+    
+    /* data */
+}robot_custom_client_data_t;
+
+typedef union 
+{
+    struct 
+    {
+        uint8_t data[30];
+        /* data */
+    };
+    
+    /* data */
+} custom_client_robot_data_t;
+
+/**********************************************************************
+ *                              机器人交互子内容
+ **********************************************************************/
+
+typedef union 
+{
+    struct 
+    {
+        uint8_t delete_type;
+        uint8_t layer;
+        /* data */
+    };
+    
+    struct 
+    {
+        uint8_t data[2];
+        /* data */
+    };
+    
+    /* data */
+} interaction_layer_delete_t;
+
+typedef union 
+{
+    struct 
+    {
+        uint8_t figure_name[3];
+        uint32_t operate_tpye:3;
+        uint32_t figure_tpye:3;
+        uint32_t layer:4;
+        uint32_t color:4;
+        uint32_t details_a:9;
+        uint32_t details_b:9;
+        uint32_t width:10;
+        uint32_t start_x:11;
+        uint32_t start_y:11;
+        uint32_t details_c:10;
+        uint32_t details_d:11;
+        uint32_t details_e:11;
+        /* data */
+    };
+    
+    struct 
+    {
+        uint8_t data[15];
+        /* data */
+    };
+    
+    /* data */
+}interaction_figure_t;
+
+typedef union 
+{
+    struct 
+    {
+        interaction_figure_t interaction_figure[2];
+        /* data */
+    };
+    
+    struct 
+    {
+        uint8_t data[30];
+        /* data */
+    };
+    
+    /* data */
+} interaction_figure_2_t;
+
+typedef union 
+{
+    struct 
+    {
+        interaction_figure_t interaction_figure[5];
+        /* data */
+    };
+    
+    struct 
+    {
+        uint8_t data[75];
+        /* data */
+    };
+    
+    /* data */
+} interaction_figure_5_t;
+
+typedef union 
+{
+    struct 
+    {
+        interaction_figure_t interaction_figure[7];
+        /* data */
+    };
+    
+    struct 
+    {
+        uint8_t data[105];
+        /* data */
+    };
+    
+    /* data */
+} interaction_figure_7_t;
+
+typedef union 
+{
+    struct 
+    {
+        interaction_figure_t interaction_figure;
+        uint8_t char_data[30];
+        /* data */
+    };
+    
+    struct 
+    {
+        uint8_t data[45];
+        /* data */
+    };
+    
+    /* data */
+} ext_client_custom_character_t;
+
+/**********************************************************************
+ *                              自定义
+ **********************************************************************/
 
 typedef union {
     struct {
@@ -484,8 +714,9 @@ typedef union
 
 #define PROTOCOL_INFO_LIST                                                                                                                                     \
     {                                                                                                                                                          \
-        {0X0001, 11, 1}, {0X0002, 1, 1}, {0X0003, 32, 1}, {0X0004, 3, 1}, {0X0101, 4, 1}, {0X0102, 4, 1}, {0X0104, 2, 1}, {0X0105, 1, 1}, {0X0201, 27, 1},     \
-            {0X0202, 16, 1}, {0X0203, 16, 1}, {0X0204, 1, 1}, {0X0205, 1, 1}, {0X0206, 1, 1}, {0X0207, 7, 1}, {0X0208, 6, 1}, {0X0209, 4, 1}, {0X020A, 12, 1}, \
+        {0X0001, 11, 1}, {0X0002, 1, 1}, {0X0003, 16, 1}, {0X0101, 4, 1}, {0X0104, 3, 1}, {0X0105, 3, 1}, {0X0201, 13, 1},     \
+            {0X0202, 14, 1}, {0X0203, 12, 1}, {0X0204, 8, 1}, {0X0206, 1, 1}, {0X0207, 7, 1}, {0X0208, 8, 1}, {0X0209, 5, 1}, {0X020A, 6, 1}, \
+            {0x020B, 40, 1}, {0x020D, 6, 1}, {0x0301, 118, 0}, \
             {0XF100, 8, 0}, {0XF101, 21, 0}, {0XF102, 36, 0}, {0XF103, 81, 0}, {0XF110, 51, 0}, {0XF104, 111, 0}, {0X1024, 32, 0}, {0X6666, 24, 0},            \
             {0X0120, 0, 1}, {0X0401, 9, 1}, {0X0402, 12, 1}, {0X0403, 12, 0}, {0X0404, 18, 0}, {0XF301, 22, 1}, {0X0501, 16, 1}, {                             \
             0X0502, 16, 1                                                                                                                                      \
@@ -501,27 +732,21 @@ typedef union {
         game_status_t                  gameStatus;                  // 0X0001 比赛状态数据
         game_result_t                  gameResult;                  // 0X0002 比赛结果的数据
         game_robot_HP_t                healthPoint;                 // 0X0003 机器人血量数据
-        dart_status_t                  dartStatus;                  // 0X0004 飞镖发射状态
         event_data_t                   eventData;                   // 0X0101 场地事件数据
-        supply_projectile_action_t     supplyProjectileaction;      // 0X0102 补给站动作标识
         referee_warning_t              refereeWarning;              // 0X0104 裁判警告信息
-        dart_remaining_time_t          dartRemainingtime;           // 0X0105 飞镖发射口倒计
+        dart_info_t                    dartRemainingtime;           // 0X0105 飞镖发射口倒计
         game_robot_status_t            gameRobotstatus;             // 0X0201 比赛机器人状态
         power_heat_data_t              powerHeatData;               // 0X0202 实时功率热量数据
         game_robot_pos_t               gameRobotpos;                // 0X0203 机器人位置
         buff_info_t                    buffInfo;                    // 0X0204 机器人增益
-        aerial_robot_energy_t          aerialRobotenergy;           // 0X0205 空中机器人能量状态
         robot_hurt_t                   robotHurt;                   // 0X0206 伤害状态
         shoot_data_t                   shootData;                   // 0X0207 实时射击信息
         bullet_remaining_t             bulletRemaining;             // 0X0208 子弹剩余发射数
         rfid_status_t                  rfidStatus;                  // 0X0209 机器人RFID状态
         dart_client_cmd_t              dartClientCmds;              // 0X020A 飞镖机器人客户端指令数据
-        client_custom_graphic_delete_t clientCustomGraphicDelete;   // 0XF100 客户端删除图形
-        client_custom_graphic_single_t client_custom_graphicSingle; // 0XF101 客户端绘制一个图形
-        client_custom_graphic_double_t clientCustomGraphicDouble;   // 0XF102 客户端绘制两个图形
-        client_custom_graphic_five_t   clientCustomGraphicFive;     // 0XF103 客户端绘制五个图形
-        client_custom_character_t      clientCustomCharacter;       // 0XF110 客户端绘制字符
-        client_custom_graphic_seven_t  clientCustomGraphicSeven;    // 0XF104 客户端绘制七个图形
+        ground_robot_position_t        groundRobotPosition;         // 0X020B 地面机器人位置
+        sentry_info_t                  sentryInfo;                  // 0X020D 哨兵信息
+        robot_interaction_data_t       robotInteractionData;        // 0X0301 机器人交互数据
         debug_info_t                   debugInfo;                   // 0X1024 调试信息
         error_info_t                   errorInfo;                   // 0X6666 报错信息
         heartbeat_t                    heartbeat;                   // 0X0120 心跳包
@@ -535,8 +760,10 @@ typedef union {
         superCapBoard_t                superCapBoard                // 0x0500 超级电容
     };
     struct {
-        uint8_t data[610];
+        uint8_t data[753];
     };
 } ProtocolData_Type;
+
+#pragma pack(pop)
 
 #endif
