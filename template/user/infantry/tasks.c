@@ -4,8 +4,8 @@
 #include "macro.h"
 #include "handle.h"
 #include "math.h"
+#include "ui.h"
 
-int qian = 0 ,zuo = 0 ;
 
 void Task_Control(void *Parameters) {
     xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY); 
@@ -486,12 +486,41 @@ void Task_Host(void *Parameters) {
 }
 
  void Task_UI(void *Parameters) {
-     TickType_t LastWakeTime  = xTaskGetTickCount();
-     uint8_t    isInitialized = 0;
-     while (1) {
-         vTaskDelayUntil(&LastWakeTime, 20);
-     }
-     vTaskDelete(NULL);
+    TickType_t LastWakeTime  = xTaskGetTickCount();
+    float interval      = 0.1; // 任务运行间隔 s
+    int   intervalms    = interval * 1000; // 任务运行间隔 ms
+    uint8_t    isInitialized = 0;
+    while (ProtocolData.gameRobotstatus.robot_id == 0);
+    ui_self_id = ProtocolData.gameRobotstatus.robot_id;
+
+    while (1) {
+        if(keyboardData.Q){
+            isInitialized = 0;
+        }
+        if(!isInitialized){
+            ui_init_g_Assault();
+			delay_ms(10);
+            ui_init_g_Dynamic();
+            delay_ms(10);
+            ui_init_g_Static_0();
+            delay_ms(10);
+            ui_init_g_Static_1();
+            delay_ms(10);
+            isInitialized = 1;
+        }
+        if(!isInitialized) continue;
+        if(PsAimEnabled){
+            ui_g_Dynamic_AimStatus->color = 8;
+        }
+        else{
+            ui_g_Dynamic_AimStatus->color = 7;
+        }
+
+        ui_g_Dynamic_Enegry->width = ProtocolData.superCapBoard.energyPercentage / 100 * 400 + 1;
+        ui_update_g_Dynamic();
+        vTaskDelayUntil(&LastWakeTime, intervalms);
+    }
+    vTaskDelete(NULL);
  }
 
 /**

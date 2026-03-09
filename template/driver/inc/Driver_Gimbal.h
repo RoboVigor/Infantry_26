@@ -8,6 +8,13 @@
 #define baryCenterZ 0      // 矢量，云台重心到旋转轴的垂直距离，单位为米
 #define gimbalMass 0       // 标量，云台总质量，单位为千克
 
+/*
+ * Function: getGimbalGravityTorque
+ * Description: Calculate the gravity torque acting on the gimbal
+ * Parameters: gyroData - Pointer to gyroscope data
+ * Returns: The calculated gravity torque, if the result is positive, it means the gravity centre is in front of the rotation axis, otherwise it is behind the rotation axis
+ * Note: The function defines the axis of motor is aligned with the standard axis of robot. And Tg + Tm = 0 in this situation.
+ */
 float getGimbalGravityTorque(GyroscopeData_Type * gyroData);
 
 

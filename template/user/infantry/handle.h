@@ -110,4 +110,7 @@ void Handle_Init(void);
 // 初始化事件组，用于需要各类需要先初始化的业务且刚需放置再rtos中进行，保证初始化完成才正常进入到完整控制系统中
 __HANDLE_EXT EventGroupHandle_t InitEventGroup;
 
+// ui id
+__HANDLE_EXT volatile int ui_self_id;
+
 #endif

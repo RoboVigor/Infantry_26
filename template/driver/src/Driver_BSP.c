@@ -1412,3 +1412,9 @@ void BSP_IWDG_Init(){
 void BSP_IWDG_Feed(){
     IWDG_ReloadCounter();
 }
+
+void DMA_Set_Memory_Address(dma_table_index_e tableIndex, uint32_t memoryAddress) {
+    while(DMA_GetCmdStatus(DMA_Table[tableIndex].DMAx_Streamy) != DISABLE) {
+    }
+    DMA_MemoryTargetConfig(DMA_Table[tableIndex].DMAx_Streamy, memoryAddress, DMA_Memory_0);
+}

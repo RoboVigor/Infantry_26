@@ -139,6 +139,7 @@ void                DMA_Disable(dma_table_index_e tableIndex);
 void                DMA_Enable(dma_table_index_e tableIndex, uint16_t length);
 DMA_Stream_TypeDef *DMA_Get_Stream(dma_table_index_e tableIndex);
 uint16_t            DMA_Get_Data_Counter(dma_table_index_e tableIndex);
+void                DMA_Set_Memory_Address(dma_table_index_e tableIndex, uint32_t memoryAddress);
 
 // PWM
 void BSP_PWM_Set_Port(PWM_Type *PWMx, uint32_t PWM_Px);

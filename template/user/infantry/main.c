@@ -107,8 +107,8 @@ int main(void) {
      *******************************************************************************/
 
     // 等待遥控器开启
-    while (!remoteData.state) {
-    }
+    // while (!remoteData.state) {
+    // }
     xTaskCreate(Task_Blink, "Task_Blink", 400, NULL, 3, NULL);
     // xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
     //模式切换任务
@@ -125,10 +125,13 @@ int main(void) {
 	// xTaskCreate(Task_Wait,"Task_Wait",400,NULL,5,NULL);
 
     // DMA发送任务
-    xTaskCreate(Task_Host, "Task_Host", 500, NULL, 4, NULL);
+    // xTaskCreate(Task_Host, "Task_Host", 500, NULL, 4, NULL);
 
     // IMU任务
     xTaskCreate(Task_Imu, "Task_Imu", 400, NULL, 6, NULL);
+
+    // UI任务
+    xTaskCreate(Task_UI, "Task_UI", 100, NULL, 5, NULL);
 
     // 定义协议发送频率
     // Bridge_Send_Protocol(&Node_Host, 0x120, 1);  // 心跳包
