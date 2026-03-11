@@ -8,6 +8,8 @@
 #define baryCenterZ 0      // 矢量，云台重心到旋转轴的垂直距离，单位为米
 #define gimbalMass 0       // 标量，云台总质量，单位为千克
 
+#define coefficentTorque2Current 1 //转矩转电流系数
+
 /*
  * Function: getGimbalGravityTorque
  * Description: Calculate the gravity torque acting on the gimbal

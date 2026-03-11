@@ -5,6 +5,7 @@
 #include "handle.h"
 #include "math.h"
 #include "ui.h"
+#include "Driver_gimbal.h"
 
 
 void Task_Control(void *Parameters) {
@@ -151,7 +152,7 @@ void Task_Gimbal(void *Parameters) {
         }
 
         // 限制云台运动范围即斜坡补偿
-        MIAO(pitchAngleTarget, GIMBAL_PITCH_MIN + chassisAngle, GIMBAL_PITCH_MAX + chassisAngle);;  
+        MIAO(pitchAngleTarget, GIMBAL_PITCH_MIN + chassisAngle, GIMBAL_PITCH_MAX + chassisAngle);
 
         // 开机时pitch轴匀速抬起
         if(!pitchInit){
@@ -187,7 +188,7 @@ void Task_Gimbal(void *Parameters) {
         }else{
             yawCurrent = PID_Cloud_YawSpeed.output;
         }
-        pitchCurrent = PID_Cloud_PitchSpeed.output; //-8500 * cos((pitchAngle * PI /180.0f))
+        pitchCurrent = PID_Cloud_PitchSpeed.output;
         Motor_Yaw.input   = yawCurrent;
         Motor_Pitch.input = pitchCurrent;
 
