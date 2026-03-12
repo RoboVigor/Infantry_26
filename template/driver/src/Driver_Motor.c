@@ -3,13 +3,14 @@
 
 #define PI 3.1415926
 
-void Motor_Init(Motor_Type *motor, float reductionRate, int8_t angleEnabled, int8_t inputEnabled) {
+void Motor_Init(Motor_Type *motor,MotorProtocol_Type protocol, float reductionRate, int8_t angleEnabled, int8_t inputEnabled) {
     motor->positionBias  = -1; // -1为未赋值状态
     motor->angleBias     = -1; // -1为未赋值状态
     motor->lastPosition  = -1; // -1为未赋值状态
     motor->reductionRate = reductionRate;
     motor->angleEnabled  = angleEnabled;
     motor->inputEnabled  = inputEnabled;
+    motor->protocol = protocol;
 }
 
 void Motor_Update(Motor_Type *motor, uint8_t data[8], uint8_t type) {

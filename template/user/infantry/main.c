@@ -21,19 +21,19 @@ int main(void) {
      *                                  硬件初始化                                  *
      *******************************************************************************/
     // 底盘电机
-    Motor_Init(&Motor_LF, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
-    Motor_Init(&Motor_LB, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
-    Motor_Init(&Motor_RB, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
-    Motor_Init(&Motor_RF, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
+    Motor_Init(&Motor_LF, C6X0, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
+    Motor_Init(&Motor_LB, C6X0, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
+    Motor_Init(&Motor_RB, C6X0, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
+    Motor_Init(&Motor_RF, C6X0, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
 
     // 发射机构电机
-    Motor_Init(&Motor_Stir, STIR_MOTOR_REDUCTION_RATE, ENABLE, ENABLE); //拨弹
-    Motor_Init(&Motor_FL, 1, DISABLE, ENABLE);
-    Motor_Init(&Motor_FR, 1, DISABLE, ENABLE);
+    Motor_Init(&Motor_Stir, C6X0, STIR_MOTOR_REDUCTION_RATE, ENABLE, ENABLE); //拨弹
+    Motor_Init(&Motor_FL, C6X0, 1, DISABLE, ENABLE);
+    Motor_Init(&Motor_FR, C6X0, 1, DISABLE, ENABLE);
 
     // 云台电机
-    Motor_Init(&Motor_Yaw, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);   
-    Motor_Init(&Motor_Pitch, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE); 
+    Motor_Init(&Motor_Yaw, GM6020, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);   
+    Motor_Init(&Motor_Pitch, GM6020, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE); 
 
     // 遥控器数据初始化
     DBUS_Init(&remoteData, &keyboardData, &mouseData);

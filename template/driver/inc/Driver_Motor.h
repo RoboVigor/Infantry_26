@@ -17,6 +17,12 @@
 
 #include "stm32f4xx.h"
 
+typedef enum {
+    C6X0 = 0,
+    GM6020,
+    MotorSum,
+} MotorProtocol_Type;
+
 typedef struct {
     int16_t  position;      // 转子位置(电调机械角度值), 0-8191
     int16_t  lastPosition;  // 上一次的转子位置
@@ -26,6 +32,7 @@ typedef struct {
     int16_t  temperature;   //温度
     uint16_t updatedAt;     // 更新电机数据时的tickCount
     uint8_t  online;        // 电机是否离线
+    MotorProtocol_Type protocol; // 电机协议类型
 
     int8_t  angleEnabled;  // 连续角度启用
     int16_t round;         // 圈数
@@ -48,7 +55,7 @@ typedef struct {
  * @param angleEnabled 是否启用连续角度计算
  * @param inputEnabled 是否启用电流输出
  */
-void Motor_Init(Motor_Type *motor, float reductionRate, int8_t angleEnabled, int8_t inputEnabled);
+void Motor_Init(Motor_Type *motor, MotorProtocol_Type protocol, float reductionRate, int8_t angleEnabled, int8_t inputEnabled);
 
 /**
  * @brief 更新电机数据
