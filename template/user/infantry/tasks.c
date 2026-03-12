@@ -487,11 +487,12 @@ void Task_Host(void *Parameters) {
 }
 
  void Task_UI(void *Parameters) {
+    xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY);
     TickType_t LastWakeTime  = xTaskGetTickCount();
     float interval      = 0.1; // 任务运行间隔 s
     int   intervalms    = interval * 1000; // 任务运行间隔 ms
     uint8_t    isInitialized = 0;
-    while (ProtocolData.gameRobotstatus.robot_id == 0);
+    while (ProtocolData.gameRobotstatus.robot_id == 0) vTaskDelayUntil(&LastWakeTime, intervalms);
     ui_self_id = ProtocolData.gameRobotstatus.robot_id;
 
     while (1) {
