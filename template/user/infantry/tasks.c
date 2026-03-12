@@ -5,7 +5,7 @@
 #include "handle.h"
 #include "math.h"
 #include "ui.h"
-#include "Driver_gimbal.h"
+#include "Driver_Gimbal.h"
 
 
 void Task_Control(void *Parameters) {
@@ -152,7 +152,7 @@ void Task_Gimbal(void *Parameters) {
         }
 
         // 限制云台运动范围即斜坡补偿
-        MIAO(pitchAngleTarget, GIMBAL_PITCH_MIN + chassisAngle, GIMBAL_PITCH_MAX + chassisAngle);
+        MIAO(pitchAngleTarget, GIMBAL_PITCH_MIN + chassisAngle, GIMBAL_PITCH_MAX + chassisAngle);;  
 
         // 开机时pitch轴匀速抬起
         if(!pitchInit){
@@ -180,15 +180,20 @@ void Task_Gimbal(void *Parameters) {
         PID_Calculate(&PID_Cloud_PitchSpeed, PID_Cloud_PitchAngle.output, pitchSpeed);
         PID_Calculate(&PID_Cloud_MotorYawSpeed, -1 *ChassisData.realvw, motorYawSpeed);
 
+        float gravityTorque = getGimbalGravityTorque(&Gyroscope_EulerData);
+
 
         // 输出电流
+
         if(SwingMode){
             yawCurrent = PID_Cloud_YawSpeed.output;
             // yawCurrent = (1 - pow(2.71828, -2.23*abs(PID_Cloud_YawAngle.error)))*PID_Cloud_YawSpeed.output + pow(2.71828, -2.23*abs(PID_Cloud_YawAngle.error)) * PID_Cloud_MotorYawSpeed.output;   //动态权重融合
         }else{
             yawCurrent = PID_Cloud_YawSpeed.output;
         }
-        pitchCurrent = PID_Cloud_PitchSpeed.output;
+
+        //pitchCurrent添加重力补偿电流，先测试加号是否正确，若失败则改为减号
+        pitchCurrent = PID_Cloud_PitchSpeed.output + gravityTorque; //-8500 * cos((pitchAngle * PI /180.0f))
         Motor_Yaw.input   = yawCurrent;
         Motor_Pitch.input = pitchCurrent;
 
@@ -330,7 +335,7 @@ void Task_Chassis(void *Parameters) {
         //运动学正解算底盘真实速度
         Chassis_Calculate_Real_Speed(&ChassisData, realMotorSpeed);
 
-        //地盘跟随和小陀螺
+        //底盘跟随和小陀螺
         if(!swingModeEnabled){
             //底盘跟随云台
             vw += Gyroscope_EulerData.yawSpeed * DPS2RPS * 0.75; //前馈
