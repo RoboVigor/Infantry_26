@@ -73,6 +73,8 @@
 #define C2T_3508 0.3f  //3508电机转矩对电流系数
 #define CurrentMap_C620 0.0012f  //c620电调电流对输入值的映射系数
 #define CurrentMap_C620_Inverse 833.333f //
+#define CurrentMap_GM6020 (3/16384.0f) //GM6020电调电流对输入值的映射系数
+#define CurrentMap_GM6020_Inverse (16384/3.0f)
 
 // 对应handle.h中的初始化事件组对应的掩码
 #define INIT_EVENT_IMU        (1 << 0)

@@ -112,7 +112,7 @@ void Task_Gimbal(void *Parameters) {
     PID_Init(&PID_Cloud_YawAngle, 3, 0.1, 0, 4000, 10);
     PID_Init(&PID_Cloud_YawSpeed, 80, 0.01, 0, 23000, 40);
     PID_Init(&PID_Cloud_PitchAngle, 12, 0, 0, 16000, 1000);
-    PID_Init(&PID_Cloud_PitchSpeed, 100, 0, 0,  20000, 16000);
+    PID_Init(&PID_Cloud_PitchSpeed, 100, 0, 0,  16384, 16000);
     PID_Init(&PID_Cloud_MotorYawSpeed, 3, 1, 0, 23000, 0);
 
     while (1) {
@@ -188,7 +188,8 @@ void Task_Gimbal(void *Parameters) {
         }else{
             yawCurrent = PID_Cloud_YawSpeed.output;
         }
-        pitchCurrent = PID_Cloud_PitchSpeed.output;
+        pitchCurrent = PID_Cloud_PitchSpeed.output + (-1*getGimbalGravityTorque(&Gyroscope_EulerData)*coefficentTorque2Current * CurrentMap_GM6020_Inverse);
+        MIAO(pitchCurrent, -16384, 16384);
         Motor_Yaw.input   = yawCurrent;
         Motor_Pitch.input = pitchCurrent;
 
