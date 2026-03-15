@@ -10,7 +10,8 @@
         "__CC_ARM",
         "__TARGET_FPU_VFP",
         "ARM_MATH_CM4",
-        "USE_STDPERIPH_DRIVER"
+        "USE_STDPERIPH_DRIVER",
+        "USE_USB_OTG_FS"
       ],
       "compilerPath": "D:/Program Files (x86)/mingw64/bin/gcc.exe",
       "cStandard": "${default}",

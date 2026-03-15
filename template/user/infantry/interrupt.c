@@ -3,6 +3,9 @@
  */
 
 #include "handle.h"
+
+extern uint32_t USBD_OTG_ISR_Handler(USB_OTG_CORE_HANDLE* pdev);
+
 // EXTI9_5 陀螺仪中断
 void EXTI9_5_IRQHandler(void) {
     uint8_t suc;
@@ -167,6 +170,10 @@ void UsageFault_Handler(void) {
 void DebugMon_Handler(void) {
     while (1) {
     }
+}
+
+void OTG_FS_IRQHandler(void){
+    USBD_OTG_ISR_Handler(&usbDevice);
 }
 
 // /**

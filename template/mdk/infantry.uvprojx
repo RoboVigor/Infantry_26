@@ -338,9 +338,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--gnu</MiscControls>
-              <Define>STM32F427_437xx,USE_STDPERIPH_DRIVER,ROBOT_LOOP_ONE.__TARGET_FPU_CM4,ARM_MATH_CM4,__CC_ARM</Define>
+              <Define>STM32F427_437xx,USE_STDPERIPH_DRIVER,ROBOT_LOOP_ONE.__TARGET_FPU_CM4,ARM_MATH_CM4,__CC_ARM,USE_USB_OTG_FS</Define>
               <Undefine></Undefine>
-              <IncludePath>..\core;..\bsp\inc;..\driver\inc;..\library\std\inc;..\user;..\library\freertos\include;..\library\freertos\portable\RVDS\ARM_CM4F;..\user\common;..\library\atom\delay;..\library\atom\sys;..\library\atom\usart;..\library\atom\debug;..\library\mpu6500;..\user\infantry;..\library\vegmath;..\user\common;..\device\inc;..\library\ekf;..\library\bismarck</IncludePath>
+              <IncludePath>..\core;..\bsp\inc;..\driver\inc;..\library\std\inc;..\user;..\library\freertos\include;..\library\freertos\portable\RVDS\ARM_CM4F;..\user\common;..\library\atom\delay;..\library\atom\sys;..\library\atom\usart;..\library\atom\debug;..\library\mpu6500;..\user\infantry;..\library\vegmath;..\user\common;..\device\inc;..\library\ekf;..\library\bismarck;..\library\usb\STM32_USB_Device_Library\Class\cdc\inc;..\library\usb\STM32_USB_Device_Library\Core\inc;..\library\usb\STM32_USB_OTG_Driver\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -549,6 +549,61 @@
               <FileType>1</FileType>
               <FilePath>..\library\bismarck\ui_g.c</FilePath>
             </File>
+            <File>
+              <FileName>usbd_cdc_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_Device_Library\Class\cdc\src\usbd_cdc_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_cdc_if.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_Device_Library\Class\cdc\src\usbd_cdc_if.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_Device_Library\Core\src\usbd_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_desc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_Device_Library\Core\src\usbd_desc.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_ioreq.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_Device_Library\Core\src\usbd_ioreq.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_req.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_Device_Library\Core\src\usbd_req.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_bsp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_OTG_Driver\src\usb_bsp.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_core.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_OTG_Driver\src\usb_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_dcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_OTG_Driver\src\usb_dcd.c</FilePath>
+            </File>
+            <File>
+              <FileName>usb_dcd_int.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_OTG_Driver\src\usb_dcd_int.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_usr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\library\usb\STM32_USB_Device_Library\Core\src\usbd_usr.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -618,6 +673,11 @@
               <FileName>Driver_Vofa.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\driver\src\Driver_Vofa.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_Gimbal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\driver\src\Driver_Gimbal.c</FilePath>
             </File>
           </Files>
         </Group>

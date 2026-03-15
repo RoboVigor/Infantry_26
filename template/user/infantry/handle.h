@@ -29,6 +29,8 @@
 #include "Driver_Fsm.h"
 #include "Driver_Vofa.h"
 
+#include "usbd_cdc_if.h"
+
 #ifdef __HANDLE_GLOBALS
 #define __HANDLE_EXT
 #else
@@ -112,5 +114,10 @@ __HANDLE_EXT EventGroupHandle_t InitEventGroup;
 
 // ui id
 __HANDLE_EXT volatile int ui_self_id;
+
+// OTG
+__HANDLE_EXT USB_OTG_CORE_HANDLE usbDevice;
+extern  USBD_DEVICE USR_desc; 
+extern  USBD_Usr_cb_TypeDef USR_cb;
 
 #endif
