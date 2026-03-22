@@ -194,6 +194,7 @@ static uint16_t Vcp_DataRx (uint8_t* Buf, uint32_t Len)
   /* Send the received buffer */
   for (i = 0; i < Len; i++)
   {
+    Node_Host.isFirstByte = 1;
     Protocol_Unpack(&Node_Host, Buf[i]);
   } 
  

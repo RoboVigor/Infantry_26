@@ -139,11 +139,7 @@ void Protocol_Unpack(Node_Type *node, uint8_t byte) {
     case STEP_SEQ: {
         node->receiveSeq            = byte;
         node->packet[node->index++] = byte;
-        if (node->bridgeType == USART_BRIDGE || ((node->deviceID > 0x499) && (node->deviceID < 0x505))) {
-            node->step = STEP_CRC8;
-        } else {
-            node->step = STEP_ID_LOW;
-        }
+        node->step = STEP_CRC8;
     } break;
 
     case STEP_CRC8: {
