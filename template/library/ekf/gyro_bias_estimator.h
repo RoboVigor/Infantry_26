@@ -21,11 +21,11 @@ extern "C" {
 /* Gyro magnitude threshold for bias update */
 #define GYRO_FOR_BIAS_THRESHOLD     0.023f
 /* the minimum number of samples required to be accumulated befor starting to updated the gyro bias */
-#define NUM_GYRO_BIAS_SAMPLES_THRESHOLD 500
+#define NUM_GYRO_BIAS_SAMPLES_THRESHOLD 300
 /* the sample length of enhance smooth for bias during cold start phase */
 #define NUM_GYRO_BIAS_SAMPLES_INITIAL_SMOOTHING 1000
 /* the number of consecutive static frames required to consider the sensor as static */
-#define IS_STATIC_NUM_FRAMES_THRESHOLD 500
+#define IS_STATIC_NUM_FRAMES_THRESHOLD 200
 
 typedef struct {
     int minStaticFrames;

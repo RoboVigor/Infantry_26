@@ -27,7 +27,7 @@ int main(void) {
     Motor_Init(&Motor_RF, C6X0, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
 
     // 发射机构电机
-    Motor_Init(&Motor_Stir, C6X0, STIR_MOTOR_REDUCTION_RATE, ENABLE, ENABLE); //拨弹
+    Motor_Init(&Motor_Stir, C6X0, STIR_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
     Motor_Init(&Motor_FL, C6X0, 1, DISABLE, ENABLE);
     Motor_Init(&Motor_FR, C6X0, 1, DISABLE, ENABLE);
 
@@ -36,7 +36,7 @@ int main(void) {
     Motor_Init(&Motor_Pitch, GM6020, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE); 
 
     // 遥控器数据初始化
-    DBUS_Init(&remoteData, &keyboardData, &mouseData);
+    Remote_Init(&remoteData, &keyboardData, &mouseData);
 
     // 通讯协议初始化
     Protocol_Init(&Node_Judge, &ProtocolData);
@@ -47,7 +47,8 @@ int main(void) {
 
     // 硬件配置
     BSP_CAN_Init();
-    BSP_DBUS_Init(remoteBuffer);
+    // BSP_DBUS_Init(remoteBuffer);
+    BSP_Remote_Init(remoteBuffer);
     BSP_TIM2_Init();
     // BSP_IMU_Init();
     BSP_Laser_Init();
@@ -59,7 +60,7 @@ int main(void) {
     BSP_Stone_Id_Init(&Board_Id, &Robot_Id);
 
     // USART
-    BSP_UART7_Init(115200, USART_IT_IDLE);
+    // BSP_UART7_Init(115200, USART_IT_IDLE);
     BSP_UART8_Init(115200, USART_IT_IDLE);
     BSP_USART6_Init(115200, USART_IT_IDLE);
 
@@ -74,15 +75,15 @@ int main(void) {
 
 
     // 总线设置
-	Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x201, &Motor_LAJI);
-    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x202, &Motor_LF);
-    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x203, &Motor_LB);
-    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x204, &Motor_RB);
-    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x205, &Motor_RF);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x201, &Motor_LAJI);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x205, &Motor_LF);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x204, &Motor_LB);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x203, &Motor_RB);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x202, &Motor_RF);
     Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x206, &Motor_Pitch);
     Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x206, &Motor_Yaw);
-    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x203, &Motor_FL);
-    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x202, &Motor_FR);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x202, &Motor_FL);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x203, &Motor_FR);
     Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x207, &Motor_Stir);
    
 
@@ -109,8 +110,9 @@ int main(void) {
      *******************************************************************************/
 
     // 等待遥控器开启
-    // while (!remoteData.state) {
-    // }
+    while (remoteData.state != RemoteWorking) {
+        delay_ms(100);
+    }
     xTaskCreate(Task_Blink, "Task_Blink", 400, NULL, 3, NULL);
     // xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
     //模式切换任务
@@ -127,7 +129,7 @@ int main(void) {
 	// xTaskCreate(Task_Wait,"Task_Wait",400,NULL,5,NULL);
 
     // DMA发送任务
-    // xTaskCreate(Task_Host, "Task_Host", 500, NULL, 4, NULL);
+    xTaskCreate(Task_Host, "Task_Host", 120, NULL, 4, NULL);
 
     // IMU任务
     xTaskCreate(Task_Imu, "Task_Imu", 400, NULL, 6, NULL);

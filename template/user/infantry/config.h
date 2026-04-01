@@ -11,7 +11,7 @@
 #define ROBOT_SHARK (Robot_Id == 3)
 
 //裁判系统启用
-#define fricEnabled 0
+#define fricEnabled 1
 
 // 调试
 #define DEBUG_ENABLED 0          // 调试开关
@@ -23,10 +23,10 @@
 #define CHASSIS_ROTOR_SPEED 550
 
 // 底盘配置
-#define CHASSIS_MOTOR_REDUCTION_RATE 19.2f  // 底盘电机减速比
-#define CHASSIS_SIZE_K 0.385f               // 测量值, 机器人中心点到XY边缘的距离之和
-#define CHASSIS_INVERSE_WHEEL_RADIUS 13.333f // 测量值, 麦克纳姆轮半径的倒数
-#define CHASSIS_RADIUS 0.250f               // 测量值，全向轮电机到底盘俯视图几何中心的距离
+#define CHASSIS_MOTOR_REDUCTION_RATE 15.765f  // 底盘电机减速比
+#define CHASSIS_SIZE_K 0.385f               // 测量值, 机器人中心点到XY边缘的距离之和, 麦轮用 及(a+b)
+#define CHASSIS_INVERSE_WHEEL_RADIUS 6.667f // 测量值, 轮半径的倒数
+#define CHASSIS_RADIUS 0.245f               // 测量值，全向轮电机到底盘俯视图几何中心的距离
 // k0,k1,k2,k3,k4,k5
 #define SECOND_MACLAURIN_COEFFICIENT {0.6641993412640775,     \
                                       0.006444284468539646,   \
@@ -46,11 +46,12 @@
 #define HAS_SLIP_RING 1                  // 该步兵拥有滑环
 #define GIMBAL_MOTOR_REDUCTION_RATE 1.0f // 云台电机减速比
 
-// 陀螺仪设置
+// 陀螺仪设置S
+#define IMU_INIT_TIME 5000                      // IMU初始化时间
 #define fastTriangle 1                          // 快速三角函数计算，仅用于imu解算，且下列三个角度必须为PI/2的倍数
 #define angle_x 0                               // 内旋，先绕x轴旋转角度（rad）
 #define angle_y 0                               // 内旋，再绕y轴旋转角度（rad）
-#define angle_z (PI)                           // 内旋，最后绕z轴旋转角度（rad）
+#define angle_z (PI)                            // 内旋，最后绕z轴旋转角度（rad）
 #if fastTriangle
   #define f_cos(para) (pow(-1, ((int)((para + PI/2)/PI*2))/2)*abs((int)((para + PI/2)/PI*2)%2))
   #define f_sin(para) (pow(-1, ((int)(para/PI*2))/2)*abs((int)(para/PI*2)%2))

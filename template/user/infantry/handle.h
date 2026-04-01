@@ -17,7 +17,7 @@
 #include "Driver_Filter.h"
 
 #include "Driver_PID.h"
-#include "Driver_DBUS.h"
+#include "Driver_Remote.h"
 #include "Driver_CAN.h"
 #include "Driver_Motor.h"
 #include "Driver_Chassis.h"
@@ -67,7 +67,7 @@ __HANDLE_EXT PID_Type   PID_Cloud_YawAngle, PID_Cloud_YawSpeed, PID_Cloud_PitchA
 __HANDLE_EXT PID_Type   PID_Follow_Angle, PID_Follow_Speed;
 
 // 遥控器
-__HANDLE_EXT uint8_t       remoteBuffer[DBUS_LENGTH + DBUS_BACK_LENGTH];
+__HANDLE_EXT uint8_t       remoteBuffer[REMOTE_LENGTH + REMOTE_BACK_LENGTH];
 __HANDLE_EXT Remote_Type   remoteData;
 __HANDLE_EXT Keyboard_Type keyboardData;
 __HANDLE_EXT Mouse_Type    mouseData;

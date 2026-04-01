@@ -13,13 +13,51 @@
 #define DPS2RPS 0.01745329f // 3.1415926f / 180.0f,    degree/s ->rad/s
 #define RPS2DPS 57.2957804f // 180.0f / 3.1415926f,    rad/s    ->degree/s
 
+// 控制方式
+// define CONTROLLED_BY_DBUS
+
+#ifdef CONTROLLED_BY_DBUS
+#define REMOTE_BAUD_RATE  100000
+#else
+#define REMOTE_BAUD_RATE  921600
+#endif
+
 // 遥控器开关
+#ifdef CONTROLLED_BY_DBUS
 #define LEFT_SWITCH_TOP     (remoteData.switchLeft == 1)
 #define LEFT_SWITCH_MIDDLE  (remoteData.switchLeft == 3)
 #define LEFT_SWITCH_BOTTOM  (remoteData.switchLeft == 2)
 #define RIGHT_SWITCH_TOP    (remoteData.switchRight == 1)
 #define RIGHT_SWITCH_MIDDLE (remoteData.switchRight == 3)
 #define RIGHT_SWITCH_BOTTOM (remoteData.switchRight == 2)
+
+#define SWITCH_LEFT     0
+#define SWITCH_MIDDLE   0
+#define SWITCH_RIGHT    0
+#define BUTTON_PAUSE_PRESSED   0
+#define BUTTON_LEFT_PRESSED    0
+#define BUTTON_RIGHT_PRESSED   0
+#define TRIGGER_PRESSED  0
+#else
+#define LEFT_SWITCH_TOP     0
+#define LEFT_SWITCH_MIDDLE  0
+#define LEFT_SWITCH_BOTTOM  0
+#define RIGHT_SWITCH_TOP    0
+#define RIGHT_SWITCH_MIDDLE 0
+#define RIGHT_SWITCH_BOTTOM 0
+
+#define SWITCH_LEFT     (remoteData.gearSwitch==0)
+#define SWITCH_MIDDLE   (remoteData.gearSwitch==1)
+#define SWITCH_RIGHT    (remoteData.gearSwitch==2)
+#define BUTTON_PAUSE_PRESSED   (remoteData.buttonPause.isPressed==1)
+#define BUTTON_LEFT_PRESSED    (remoteData.buttonLeft.isPressed==1)
+#define BUTTON_RIGHT_PRESSED   (remoteData.buttonRight.isPressed==1)
+#define BUTTON_PAUSE_TOGGLED   (remoteData.buttonPause.state==1)
+#define BUTTON_LEFT_TOGGLED    (remoteData.buttonLeft.state==1)
+#define BUTTON_RIGHT_TOGGLED   (remoteData.buttonRight.state==1)
+#define TRIGGER_PRESSED  (remoteData.trigger==1)
+
+#endif
 
 // 数值运算
 #define ABS(x) ((x) >= 0 ? (x) : -(x))

@@ -11,6 +11,7 @@
 
 #include "orientation_ekf.h"
 #include "stdio.h"
+#include "handle.h"
 
 OrientationEKF ekf;
 
@@ -340,6 +341,7 @@ void OrientationEKF_UpdateMag(OrientationEKF *ekf, const Vector3d *mag, uint64_t
  * @param quanterion Input quaternion array [qw, qx, qy, qz].
  * @param rpy Output array for roll, pitch, yaw angles (in radians).
  */
+#define PI 3.141592653589793f
 void OrientationEKF_GetRPY(const float* quanterion, float *rpy) {
     float qw = quanterion[0];
     float qx = quanterion[1];
@@ -349,16 +351,9 @@ void OrientationEKF_GetRPY(const float* quanterion, float *rpy) {
     float *pitch = rpy + 1;
     float *yaw = rpy + 2;
 
-    float sinr_cosp = 2.0f * (qw * qx + qy * qz);
-    float cosr_cosp = 1.0f - 2.0f * (qx * qx + qy * qy);
-    *roll = atan2(sinr_cosp, cosr_cosp);
-
-    float sinp = 2.0f * (qw * qy - qz * qx);
-    *pitch = asin(sinp);
-
-    float siny_cosp = 2.0f * (qw * qz + qx * qy);
-    float cosy_cosp = 1.0f - 2.0f * (qy * qy + qz * qz);
-    *yaw = atan2(siny_cosp, cosy_cosp);
+    *roll = atan2(2.0f * (qw * qx + qy * qz), qw * qw - qx * qx - qy * qy + qz * qz) * 180 / PI;
+    *pitch = asin(2.0f * (qw * qy - qz * qx)) * 180 / PI;
+    *yaw = atan2(2.0f * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz) * 180 / PI;
 }
 
 /**

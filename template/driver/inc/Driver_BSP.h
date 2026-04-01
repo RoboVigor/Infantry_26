@@ -110,7 +110,7 @@ void BSP_Stone_Id_Init(uint8_t *Board_Id, uint8_t *Robot_Id);
 
 // SERVICE
 void BSP_CAN_Init(void);
-void BSP_DBUS_Init(uint8_t *remoteBuffer);
+void BSP_Remote_Init(uint8_t *remoteBuffer);
 void BSP_IMU_Init(void);
 void BSP_Laser_Init(void);
 void BSP_User_Power_Init(void);

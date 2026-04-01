@@ -189,10 +189,14 @@ int Gyroscope_Update(GyroscopeData_Type *GyroscopeData) {
     // 读取完成进行解算
     uint32_t lasttime = imu_data.timestamp.us_time;
     Gyroscope_Solve(GyroscopeData);
-    VofaData->debug0 = GyroscopeData->roll;
-    VofaData->debug1 = GyroscopeData->pitch;
-    VofaData->debug2 = GyroscopeData->yaw;
-    VofaData->debug3 = imu_data.timestamp.us_time - lasttime;
+    // VofaData->debug0 = GyroscopeData->roll;
+    // VofaData->debug1 = GyroscopeData->pitch;
+    // VofaData->debug2 = GyroscopeData->yaw;
+    // VofaData->debug3 = imu_data.quaterion[IMU_QUATERNION_W_INDEX];
+    // VofaData->debug4 = imu_data.quaterion[IMU_QUATERNION_X_INDEX];
+    // VofaData->debug5 = imu_data.quaterion[IMU_QUATERNION_Y_INDEX];
+    // VofaData->debug6 = imu_data.quaterion[IMU_QUATERNION_Z_INDEX];
+
     // 返回成功值
     return 1;
 }
@@ -277,7 +281,7 @@ void Gyroscope_Solve(GyroscopeData_Type *GyroscopeData) {
     //计算角速度
     Gyroscope_Calculate_angleSpeed(GyroscopeData, imu_data.rpy[IMU_Z_INDEX], imu_data.rpy[IMU_Y_INDEX], imu_data.rpy[IMU_X_INDEX]);
     // 更新滤波器
-    Filter_Update(&Filter_Yaw, imu_data.rpy[IMU_Z_INDEX] * 180.0f / PI);
+    Filter_Update(&Filter_Yaw, imu_data.rpy[IMU_Z_INDEX]);
 
     // 计算连续 Yaw 角
     if (Filter_Yaw.diff > 300) {
@@ -296,8 +300,8 @@ void Gyroscope_Solve(GyroscopeData_Type *GyroscopeData) {
 //     }
 //     #endif
 
-    GyroscopeData->pitch = imu_data.rpy[IMU_Y_INDEX] * 180.0f / PI;  //放弃修改顺时针为正（因为这会导致后续的云台控制要修正更多的方向，不利于模型推导
-    GyroscopeData->roll  = imu_data.rpy[IMU_X_INDEX] * 180.0f / PI;
+    GyroscopeData->pitch = imu_data.rpy[IMU_Y_INDEX];  //放弃修改顺时针为正（因为这会导致后续的云台控制要修正更多的方向，不利于模型推导
+    GyroscopeData->roll  = imu_data.rpy[IMU_X_INDEX];
 
 //     // 开机延迟计数
 // #if GYROSCOPE_START_UP_DELAY_ENABLED
@@ -363,7 +367,7 @@ void Gyroscope_Calculate_angleSpeed(GyroscopeData_Type *gd, float yaw, float pit
     yaw *= PI/180;
     pitch *= PI/180;
     roll *= PI/180;
-    float angleSpeed[3] = {xSpeed, ySpeed, zSpeed};
+    float *angleSpeed = imu_data.calibrated.gyro;
     float angleSpeed_trans[3];
     float transMatrix[9] = {cos(roll)*cos(yaw),cos(roll)*sin(yaw),-sin(roll), \
                                 cos(yaw)*sin(pitch)*sin(roll) - cos(pitch)*sin(yaw), cos(pitch)*cos(yaw) + sin(pitch)*sin(roll)*sin(yaw), cos(roll)*sin(pitch), \

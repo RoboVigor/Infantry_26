@@ -176,7 +176,7 @@ void Protocol_Unpack(Node_Type *node, uint8_t byte) {
         } else {
             node->waitCount = node->dataLength + PROTOCOL_CRC16_SIZE;
             node->step      = STEP_WAIT;
-        }
+        } 
     } break;
 
     case STEP_DATA: {
