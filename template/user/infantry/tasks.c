@@ -146,11 +146,13 @@ void Task_Gimbal(void *Parameters) {
 
 
         // 视觉辅助
-        yawAngleTargetPs = HostAutoaimData.yaw_angle_diff;
-        pitchAngleTargetPs = HostAutoaimData.pitch_angle_diff;
+        yawAngleTargetPs = ProtocolData.autoaimData.yaw_angle_diff;
+        ProtocolData.autoaimData.yaw_angle_diff = 0;
+        pitchAngleTargetPs = ProtocolData.autoaimData.pitch_angle_diff;
+        ProtocolData.autoaimData.pitch_angle_diff = 0;
         if (PsAimEnabled) {
-             yawAngleTarget = yawAngle + yawAngleTargetPs;
-             pitchAngleTarget = pitchAngle + pitchAngleTargetPs;
+            yawAngleTarget = yawAngle + yawAngleTargetPs;
+            pitchAngleTarget = pitchAngle + pitchAngleTargetPs;
         }
 
         // 限制云台运动范围即斜坡补偿
@@ -337,19 +339,21 @@ void Task_Chassis(void *Parameters) {
 
         //地盘跟随和小陀螺
         if(!swingModeEnabled){
-            //底盘跟随云台
-            // vw += Gyroscope_EulerData.yawSpeed * DPS2RPS * 0.75; //前馈
-            int fbAngle1 = (((int)motorAngle % 360) > 0 ? (((int)motorAngle % 360) - 360): (((int)motorAngle % 360)  +  360));
-            int fbAngle2 = ((int)motorAngle % 360);
-            int fbAngle =abs(((int)motorAngle % 360) / 180) ? fbAngle1: fbAngle2;
-            PID_Calculate(&PID_Follow_Angle, 0, -fbAngle);
-            if(abs((int)PID_Follow_Angle.error) > followDeadRegion) {
+            if(!PsAimEnabled){
+                //底盘跟随云台
+                vw += Gyroscope_EulerData.yawSpeed * DPS2RPS * 0.75; //前馈
+                int fbAngle1 = (((int)motorAngle % 360) > 0 ? (((int)motorAngle % 360) - 360): (((int)motorAngle % 360)  +  360));
+                int fbAngle2 = ((int)motorAngle % 360);
+                int fbAngle =abs(((int)motorAngle % 360) / 180) ? fbAngle1: fbAngle2;
+                PID_Calculate(&PID_Follow_Angle, 0, -fbAngle);
+                if(abs((int)PID_Follow_Angle.error) > followDeadRegion) {
                 PID_Calculate(&PID_Follow_Speed, PID_Follow_Angle.output, ChassisData.realvw); //此处本质是为了让已有速度前馈下还存在的error进行一个速度小补偿，此处的速度环pid仅作scalar的作用并无反馈
                 // if(Motor_Yaw.online) {
                     vw += PID_Follow_Speed.output * DPS2RPS;
                 // }else {
                     // vw = 0;
                 // }
+                }
             }
         }else{
             // 小陀螺
