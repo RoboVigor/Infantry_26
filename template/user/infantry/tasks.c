@@ -111,10 +111,10 @@ void Task_Gimbal(void *Parameters) {
     float pitchAngleTargetRamp = 0;
 
     // 初始化云台PID
-    PID_Init(&PID_Cloud_YawAngle, 3, 0.1, 0, 4000, 10);
-    PID_Init(&PID_Cloud_YawSpeed, 80, 0.01, 0, 23000, 40);
-    PID_Init(&PID_Cloud_PitchAngle, 50, 0, 1.2, 16000, 1000);
-    PID_Init(&PID_Cloud_PitchSpeed, 10, 0, 0,  16384, 16000);
+    PID_Init(&PID_Cloud_YawAngle, 3, 0.1, 0, 1000, 10);
+    PID_Init(&PID_Cloud_YawSpeed, 80, 0, 2, 16384, 40);
+    PID_Init(&PID_Cloud_PitchAngle, 10, 0.1, 0.4, 1000, 50);
+    PID_Init(&PID_Cloud_PitchSpeed, 60, 0, 0,  16384, 16000);
     PID_Init(&PID_Cloud_MotorYawSpeed, 3, 1, 0, 23000, 0);
 
     while (1) {
@@ -145,15 +145,24 @@ void Task_Gimbal(void *Parameters) {
         pitchAngleTarget += pitchAngleTargetControl;
 
 
+
         // 视觉辅助
         yawAngleTargetPs = ProtocolData.autoaimData.yaw_angle_diff;
-        ProtocolData.autoaimData.yaw_angle_diff = 0;
         pitchAngleTargetPs = ProtocolData.autoaimData.pitch_angle_diff;
-        ProtocolData.autoaimData.pitch_angle_diff = 0;
+        VofaData->debug0 = yawAngleTargetPs;
+        VofaData->debug1 = pitchAngleTargetPs;
         if (PsAimEnabled) {
-            yawAngleTarget = yawAngle + yawAngleTargetPs;
-            pitchAngleTarget = pitchAngle + pitchAngleTargetPs;
+            if(pitchAngleTargetPs != 0 || yawAngleTargetPs != 0) {
+                yawAngleTarget = yawAngle + yawAngleTargetPs;
+                pitchAngleTarget = pitchAngle + pitchAngleTargetPs;
+                ProtocolData.autoaimData.yaw_angle_diff = 0;
+                ProtocolData.autoaimData.pitch_angle_diff = 0;
+            }
         }
+        VofaData->debug2 = yawAngleTarget;
+        VofaData->debug3 = pitchAngleTarget;
+        VofaData->debug4 = yawAngle;
+        VofaData->debug5 = pitchAngle;
 
         // 限制云台运动范围即斜坡补偿
         MIAO(pitchAngleTarget, GIMBAL_PITCH_MIN + chassisAngle, GIMBAL_PITCH_MAX + chassisAngle);
