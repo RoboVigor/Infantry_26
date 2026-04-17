@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "name": "windows-gcc-x64",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [
+        "STM32F427_437xx",
+        "__CC_ARM",
+        "__TARGET_FPU_VFP",
+        "ARM_MATH_CM4",
+        "USE_STDPERIPH_DRIVER",
+        "USE_USB_OTG_FS"
+      ],
+      "compilerPath": "D:/Program Files (x86)/mingw64/bin/gcc.exe",
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "intelliSenseMode": "windows-gcc-x64",
+      "compilerArgs": [
+        ""
+      ]
+    }
+  ],
+  "version": 4
+}

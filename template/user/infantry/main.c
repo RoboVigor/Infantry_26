@@ -1,0 +1,157 @@
+#define __HANDLE_GLOBALS
+
+#include "config.h"
+#include "macro.h"
+#include "handle.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "tasks.h"
+
+int main(void) {
+
+    //设置中断优先级位数
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+
+    //调试相关
+    Delay_Init(180); // 初始化延时
+    LED_Init();      // 初始化LED
+    Beep_Init();     // 初始化蜂鸣器
+
+    /*******************************************************************************
+     *                                  硬件初始化                                  *
+     *******************************************************************************/
+    // 底盘电机
+    Motor_Init(&Motor_LF, C6X0, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
+    Motor_Init(&Motor_LB, C6X0, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
+    Motor_Init(&Motor_RB, C6X0, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
+    Motor_Init(&Motor_RF, C6X0, CHASSIS_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
+
+    // 发射机构电机
+    Motor_Init(&Motor_Stir, C6X0, STIR_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);
+    Motor_Init(&Motor_FL, C6X0, 1, DISABLE, ENABLE);
+    Motor_Init(&Motor_FR, C6X0, 1, DISABLE, ENABLE);
+
+    // 云台电机
+    Motor_Init(&Motor_Yaw, GM6020, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE);   
+    Motor_Init(&Motor_Pitch, GM6020, GIMBAL_MOTOR_REDUCTION_RATE, ENABLE, ENABLE); 
+
+    // 遥控器数据初始化
+    Remote_Init(&remoteData, &keyboardData, &mouseData);
+
+    // 通讯协议初始化
+    Protocol_Init(&Node_Judge, &ProtocolData);
+    Protocol_Init(&Node_Host, &ProtocolData);
+    Protocol_Init(&Node_Board, &ProtocolData);
+    Protocol_Init(&Node_SuperCap, &ProtocolData);
+    Protocol_Init(&Node_Debug,&ProtocolData);
+
+    // 硬件配置
+    BSP_CAN_Init();
+    // BSP_DBUS_Init(remoteBuffer);
+    BSP_Remote_Init(remoteBuffer);
+    BSP_TIM2_Init();
+    // BSP_IMU_Init();
+    BSP_Laser_Init();
+    BSP_Beep_Init();
+    BSP_LED_Init();
+    BSP_User_Power_Init();
+
+    // 获得设备ID
+    BSP_Stone_Id_Init(&Board_Id, &Robot_Id);
+
+    // USART
+    // BSP_UART7_Init(115200, USART_IT_IDLE);
+    BSP_UART8_Init(115200, USART_IT_IDLE);
+    BSP_USART6_Init(115200, USART_IT_IDLE);
+
+    // Servo
+    BSP_PWM_Set_Port(&PWM_Magazine_Servo, PWM_PH10);
+    BSP_PWM_Init(&PWM_Magazine_Servo, 9000, 200, TIM_OCPolarity_Low);
+
+    // Calibration
+    Motor_Set_Angle_Bias(&Motor_Yaw, 0);
+    Motor_Set_Angle_Bias(&Motor_Pitch, 0);
+    // Gyroscope_Set_Bias(&ImuData, 30, 4, -7);
+
+
+    // 总线设置
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x201, &Motor_LAJI);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x205, &Motor_LF);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x204, &Motor_LB);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x203, &Motor_RB);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x202, &Motor_RF);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x206, &Motor_Pitch);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x206, &Motor_Yaw);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x202, &Motor_FL);
+    Bridge_Bind(&BridgeData, CAN2_BRIDGE, 0x203, &Motor_FR);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x207, &Motor_Stir);
+   
+
+    // 总线设置
+    // Bridge_Bind(&BridgeData, USART_BRIDGE, 7, &Node_Host);
+    Bridge_Bind(&BridgeData, USART_BRIDGE, 8, &Node_Judge);
+    Bridge_Bind(&BridgeData, USART_BRIDGE, 6,&Node_Debug);
+    Bridge_Bind(&BridgeData, CAN1_BRIDGE, 0x500, &Node_SuperCap);
+
+    // 陀螺仪
+    // Gyroscope_Init(&Gyroscope_EulerData, 300); // 初始化
+
+    //绑定debug指针
+    VofaData = &(ProtocolData.debugInfo.vofaData);
+    DebugData = &(ProtocolData.debugInfo.debugData);
+
+    USBD_Init(&usbDevice, USB_OTG_FS_CORE_ID, &USR_desc, &USBD_CDC_cb, &USR_cb);
+
+    // 安全延时
+    delay_ms(500);
+
+    /*******************************************************************************
+     *                                 任务初始化                                   *
+     *******************************************************************************/
+
+    // 等待遥控器开启
+    while (remoteData.state != RemoteWorking) {
+        delay_ms(100);
+    }
+    xTaskCreate(Task_Blink, "Task_Blink", 400, NULL, 3, NULL);
+    // xTaskCreate(Task_Startup_Music, "Task_Startup_Music", 200, NULL, 3, NULL);
+    //模式切换任务
+    xTaskCreate(Task_Control, "Task_Control", 400, NULL, 6, NULL);
+
+    // // Can发送任务
+    xTaskCreate(Task_Can_Send, "Task_Can_Send", 500, NULL, 4, NULL);
+
+    // // 运动控制任务
+    xTaskCreate(Task_Chassis, "Task_Chassis", 400, NULL, 5, NULL);
+    xTaskCreate(Task_Gimbal, "Task_Gimbal", 500, NULL, 5, NULL);
+    xTaskCreate(Task_Fire_Stir, "Task_Fire_Stir", 400, NULL, 6, NULL);
+    xTaskCreate(Task_Fire_Frict, "Task_Fire_Frict", 400, NULL, 6, NULL);
+	// xTaskCreate(Task_Wait,"Task_Wait",400,NULL,5,NULL);
+
+    // DMA发送任务
+    xTaskCreate(Task_Host, "Task_Host", 120, NULL, 4, NULL);
+
+    // IMU任务
+    xTaskCreate(Task_Imu, "Task_Imu", 400, NULL, 6, NULL);
+
+    // UI任务
+    xTaskCreate(Task_UI, "Task_UI", 100, NULL, 5, NULL);
+
+    // 定义协议发送频率
+    // Bridge_Send_Protocol(&Node_Host, 0x120, 1);  // 心跳包
+    // Bridge_Send_Protocol(&Node_Host, 0x403, 20); // 陀螺仪
+    
+    // debug发送
+    // Bridge_Send_Protocol(&Node_Debug, 0x1024, 200);
+    Vofa_Send(20, 100, &Node_Debug, 0x1024);
+
+    // 初始化事件组
+    InitEventGroup = xEventGroupCreate();
+
+    //启动调度,开始执行任务
+    vTaskStartScheduler();
+
+    //系统启动失败:定时器任务或者空闲任务的heap空间不足
+    while (1) {
+    }
+}
