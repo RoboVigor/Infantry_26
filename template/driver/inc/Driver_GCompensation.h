@@ -12,8 +12,8 @@
  * @details 用于存储采集的电流和角度数据
  */
 typedef struct {
-    float current[50];    // 存储电机电流数据
-    float pitch[50];      // 存储俯仰角度数据（弧度）
+    float current[400];    // 存储电机电流数据
+    float pitch[400];      // 存储俯仰角度数据（弧度）
     uint8_t count;        // 数据点数量
     uint8_t max_points;   // 最大数据点数量
     uint8_t initialized;  // 是否初始化

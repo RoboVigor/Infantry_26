@@ -11,13 +11,13 @@ GravityCalibration_Type gravityCal;
  */
 void Gravity_Calibration_Init(void) {
     // 清零数据数组
-    for(int i = 0; i < 50; i++) {
+    for(int i = 0; i < 400; i++) {
         gravityCal.current[i] = 0.0f;
         gravityCal.pitch[i] = 0.0f;
     }
     
     gravityCal.count = 0;
-    gravityCal.max_points = 50;
+    gravityCal.max_points = 400;
     gravityCal.compensation_coeff = 0.0f;
     gravityCal.initialized = 1;
     gravityCal.calibrated = 0;
