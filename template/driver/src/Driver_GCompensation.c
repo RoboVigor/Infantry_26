@@ -1,101 +1,113 @@
 #include "Driver_GCompensation.h"
-#include "Driver_Gimbal.h" // 用于获取coefficentTorque2Current等参数
-#include "../user/infantry/config.h" // 用于获取CurrentMap_GM6020_Inverse等参数
-#include <math.h> // 用于数学函数
+#include <math.h>
+
+#define GRAVITY_PI 3.14159265358979323846f
+#define GRAVITY_DEG_TO_RAD (GRAVITY_PI / 180.0f)
+#define GRAVITY_FIT_EPSILON 1.0e-6f
 
 GravityCalibration_Type gravityCal;
 
-/**
- * @brief 初始化重力补偿模块
- * @details 初始化数据存储结构体和相关参数
- */
 void Gravity_Calibration_Init(void) {
-    // 清零数据数组
-    for(int i = 0; i < 400; i++) {
+    uint16_t i;
+
+    for(i = 0; i < GRAVITY_CALIBRATION_MAX_POINTS; i++) {
         gravityCal.current[i] = 0.0f;
         gravityCal.pitch[i] = 0.0f;
     }
-    
+
     gravityCal.count = 0;
-    gravityCal.max_points = 400;
+    gravityCal.max_points = GRAVITY_CALIBRATION_MAX_POINTS;
     gravityCal.compensation_coeff = 0.0f;
+    gravityCal.compensation_cos_coeff = 0.0f;
+    gravityCal.compensation_bias = 0.0f;
     gravityCal.initialized = 1;
     gravityCal.calibrated = 0;
 }
 
-/**
- * @brief 添加标定数据点
- * @param pitch 俯仰角度（度）
- * @param current 电机实际电流
- * @details 在云台抬起过程中添加数据点
- */
 void Gravity_Add_Calibration_Point(float pitch, float current) {
     if (!gravityCal.initialized || gravityCal.calibrated) return;
-    
+
     if (gravityCal.count < gravityCal.max_points) {
-        // 将角度转换为弧度
-        gravityCal.pitch[gravityCal.count] = pitch * (float)M_PI / 180.0f;
+        gravityCal.pitch[gravityCal.count] = pitch * GRAVITY_DEG_TO_RAD;
         gravityCal.current[gravityCal.count] = current;
         gravityCal.count++;
     }
 }
 
-/**
- * @brief 执行线性拟合计算补偿系数
- * @details 使用最小二乘法拟合数据，计算补偿系数
- */
 void Gravity_Perform_Calibration(void) {
+    uint16_t i;
+    float ss = 0.0f;
+    float cc = 0.0f;
+    float sc = 0.0f;
+    float s1 = 0.0f;
+    float c1 = 0.0f;
+    float y_s = 0.0f;
+    float y_c = 0.0f;
+    float y_1 = 0.0f;
+    float n = (float)gravityCal.count;
+    float determinant;
+
     if (!gravityCal.initialized || gravityCal.count < 3) return;
-    
-    // 使用最小二乘法拟合 I = k * sin(θ) 形式的模型
-    // 目标：找到系数k，使得误差平方和最小
-    
-    float sum_xy = 0.0f;  // sum(current * sin(pitch))
-    float sum_xx = 0.0f;  // sum(sin(pitch) * sin(pitch))
-    
-    for (int i = 0; i < gravityCal.count; i++) {
+
+    /*
+     * Fit current = a * sin(theta) + b * cos(theta) + c.
+     * This keeps the compensation useful even when the mechanical zero is not
+     * exactly the gravity-balance angle.
+     */
+    for (i = 0; i < gravityCal.count; i++) {
         float sin_pitch = sinf(gravityCal.pitch[i]);
-        sum_xy += gravityCal.current[i] * sin_pitch;
-        sum_xx += sin_pitch * sin_pitch;
+        float cos_pitch = cosf(gravityCal.pitch[i]);
+        float current = gravityCal.current[i];
+
+        ss += sin_pitch * sin_pitch;
+        cc += cos_pitch * cos_pitch;
+        sc += sin_pitch * cos_pitch;
+        s1 += sin_pitch;
+        c1 += cos_pitch;
+        y_s += current * sin_pitch;
+        y_c += current * cos_pitch;
+        y_1 += current;
     }
-    
-    // 计算补偿系数 k = sum_xy / sum_xx
-    if (sum_xx != 0.0f) {
-        gravityCal.compensation_coeff = sum_xy / sum_xx;
-        gravityCal.calibrated = 1;
-    }
+
+    determinant = ss * (cc * n - c1 * c1)
+                - sc * (sc * n - c1 * s1)
+                + s1 * (sc * c1 - cc * s1);
+
+    if (fabsf(determinant) < GRAVITY_FIT_EPSILON) return;
+
+    gravityCal.compensation_coeff =
+        (y_s * (cc * n - c1 * c1)
+       - sc * (y_c * n - c1 * y_1)
+       + s1 * (y_c * c1 - cc * y_1)) / determinant;
+
+    gravityCal.compensation_cos_coeff =
+        (ss * (y_c * n - c1 * y_1)
+       - y_s * (sc * n - c1 * s1)
+       + s1 * (sc * y_1 - y_c * s1)) / determinant;
+
+    gravityCal.compensation_bias =
+        (ss * (cc * y_1 - y_c * c1)
+       - sc * (sc * y_1 - y_c * s1)
+       + y_s * (sc * c1 - cc * s1)) / determinant;
+
+    gravityCal.calibrated = 1;
 }
 
-/**
- * @brief 计算重力补偿电流
- * @param pitch 俯仰角度（度）
- * @return 重力补偿前馈电流值
- * @details 根据角度和补偿系数计算重力补偿，输出补偿电流值
- */
 float Gravity_Compensation_Calculate(float pitch) {
+    float pitch_rad = pitch * GRAVITY_DEG_TO_RAD;
+
     if (!gravityCal.initialized || !gravityCal.calibrated) return 0.0f;
-    
-    // 将角度转换为弧度
-    float pitch_rad = pitch * (float)M_PI / 180.0f;
-    
-    // 计算补偿电流：I_compensation = coeff * sin(pitch)
-    // 注意：重力矩的方向与sin(pitch)相关 
-    return gravityCal.compensation_coeff * sinf(pitch_rad);
+
+    return gravityCal.compensation_coeff * sinf(pitch_rad)
+         + gravityCal.compensation_cos_coeff * cosf(pitch_rad)
+         + gravityCal.compensation_bias;
 }
 
-/**
- * @brief 获取当前补偿系数
- * @return 当前使用的补偿系数
- */
 float Gravity_Get_Coefficient(void) {
     if (!gravityCal.initialized) return 0.0f;
     return gravityCal.compensation_coeff;
 }
 
-/**
- * @brief 检查是否已完成标定
- * @return 1表示已完成标定，0表示未完成
- */
 uint8_t Gravity_Is_Calibrated(void) {
     return gravityCal.calibrated;
 }

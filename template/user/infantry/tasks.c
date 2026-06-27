@@ -234,7 +234,7 @@ void Task_Gimbal(void *Parameters) {
             gravityCompensation = Gravity_Compensation_Calculate(pitchAngleTarget);
         }
         
-        pitchCurrent = gravityCompensation + PID_Cloud_PitchSpeed.output;
+        pitchCurrent = PID_Cloud_PitchSpeed.output + gravityCompensation * CurrentMap_GM6020_Inverse;
         MIAO(pitchCurrent, -16384, 16384);
         Motor_Yaw.input   = yawCurrent;
         Motor_Pitch.input = pitchCurrent;

@@ -19,6 +19,7 @@ void Motor_Update(Motor_Type *motor, uint8_t data[8], uint8_t type) {
     int16_t actualCurrent;
     int16_t temperature;
     float angle;
+    float currentRange;
     switch (type)
     {
     //DJI
@@ -34,7 +35,8 @@ void Motor_Update(Motor_Type *motor, uint8_t data[8], uint8_t type) {
         // 更新转子信息
         motor->position      = position;
         motor->speed         = speed;
-        motor->actualCurrent = (actualCurrent / 16384.0) * 20;
+        currentRange = motor->protocol == GM6020 ? 3.0f : 20.0f;
+        motor->actualCurrent = (actualCurrent / 16384.0f) * currentRange;
         motor->torque        = MAX(24 * motor->actualCurrent, 0) / (speed * PI / 30.0 / motor->reductionRate + 2);
         motor->temperature   = temperature;
 
