@@ -8,6 +8,24 @@
 #include "Driver_gimbal.h"
 #include "Driver_GCompensation.h"
 
+static int16_t Apply_Int16_Deadzone(int16_t value, int16_t deadzone) {
+    return ABS(value) > deadzone ? value : 0;
+}
+
+static float Apply_Float_Deadzone(float value, float deadzone) {
+    return ABS(value) > deadzone ? value : 0.0f;
+}
+
+static void PID_Clear_State(PID_Type *pid) {
+    pid->error = 0.0f;
+    pid->lastError = 0.0f;
+    pid->output_P = 0.0f;
+    pid->output_I = 0.0f;
+    pid->output_D = 0.0f;
+    pid->output = 0.0f;
+    pid->lastOutput = 0.0f;
+}
+
 
 void Task_Control(void *Parameters) {
     xEventGroupWaitBits(InitEventGroup, INIT_EVENT_ALL, pdFALSE, pdTRUE, portMAX_DELAY); 
@@ -270,13 +288,21 @@ void Task_Chassis(void *Parameters) {
     float power          = 0;
     float powerBuffer    = 0;
     float realMotorSpeed[4] = {0,0,0,0};
+    float realvxForPid = 0;
+    float realvyForPid = 0;
+    float realvwForPid = 0;
+    int16_t remoteLx = 0;
+    int16_t remoteLy = 0;
+    int fbAngle1 = 0;
+    int fbAngle2 = 0;
+    int fbAngle = 0;
 
     // 小陀螺
     float   swingSpeed       = 0;
     uint8_t swingModeEnabled = 0;
 
     // 底盘跟随PID
-    float followDeadRegion = 3.0;
+    float followDeadRegion = CHASSIS_FOLLOW_ANGLE_DEADZONE;
     PID_Init(&PID_Follow_Angle, 8, 0.05, 0, 100, 10);
     PID_Init(&PID_Follow_Speed, 3, 0, 0.05, 300, 0);
 
@@ -345,8 +371,10 @@ void Task_Chassis(void *Parameters) {
         vy = 0;
         vw = 0;
         if (ControlMode == 1) {
-			vy = -remoteData.lx / 660.0f * 6.0;
-			vx = remoteData.ly / 660.0f * 6.0;
+            remoteLx = Apply_Int16_Deadzone(remoteData.lx, CHASSIS_REMOTE_DEADZONE);
+            remoteLy = Apply_Int16_Deadzone(remoteData.ly, CHASSIS_REMOTE_DEADZONE);
+			vy = -remoteLx / 660.0f * 6.0f;
+			vx = remoteLy / 660.0f * 6.0f;
 
         } else if (ControlMode == 2) {
             xTargetRamp = RAMP(xRampStart, 660, xRampProgress);
@@ -376,23 +404,25 @@ void Task_Chassis(void *Parameters) {
     
         //运动学正解算底盘真实速度
         Chassis_Calculate_Real_Speed(&ChassisData, realMotorSpeed);
+        realvxForPid = Apply_Float_Deadzone(ChassisData.realvx, CHASSIS_IDLE_LINEAR_SPEED_DEADZONE);
+        realvyForPid = Apply_Float_Deadzone(ChassisData.realvy, CHASSIS_IDLE_LINEAR_SPEED_DEADZONE);
+        realvwForPid = Apply_Float_Deadzone(ChassisData.realvw, CHASSIS_IDLE_ANGULAR_SPEED_DEADZONE);
 
         //地盘跟随和小陀螺
         if(!swingModeEnabled){
             if(!PsAimEnabled){
                 //底盘跟随云台
-                vw += Gyroscope_EulerData.yawSpeed * DPS2RPS * 0.75; //前馈
-                int fbAngle1 = (((int)motorAngle % 360) > 0 ? (((int)motorAngle % 360) - 360): (((int)motorAngle % 360)  +  360));
-                int fbAngle2 = ((int)motorAngle % 360);
-                int fbAngle =abs(((int)motorAngle % 360) / 180) ? fbAngle1: fbAngle2;
-                PID_Calculate(&PID_Follow_Angle, 0, -fbAngle);
-                if(abs((int)PID_Follow_Angle.error) > followDeadRegion) {
-                PID_Calculate(&PID_Follow_Speed, PID_Follow_Angle.output, ChassisData.realvw); //此处本质是为了让已有速度前馈下还存在的error进行一个速度小补偿，此处的速度环pid仅作scalar的作用并无反馈
-                // if(Motor_Yaw.online) {
+                vw += Apply_Float_Deadzone(Gyroscope_EulerData.yawSpeed, CHASSIS_YAW_SPEED_DEADZONE_DPS) * DPS2RPS * 0.75f; //前馈
+                fbAngle1 = (((int)motorAngle % 360) > 0 ? (((int)motorAngle % 360) - 360): (((int)motorAngle % 360)  +  360));
+                fbAngle2 = ((int)motorAngle % 360);
+                fbAngle = abs(((int)motorAngle % 360) / 180) ? fbAngle1: fbAngle2;
+                if(abs(fbAngle) > followDeadRegion) {
+                    PID_Calculate(&PID_Follow_Angle, 0, -fbAngle);
+                    PID_Calculate(&PID_Follow_Speed, PID_Follow_Angle.output, realvwForPid);
                     vw += PID_Follow_Speed.output * DPS2RPS;
-                // }else {
-                    // vw = 0;
-                // }
+                } else {
+                    PID_Clear_State(&PID_Follow_Angle);
+                    PID_Clear_State(&PID_Follow_Speed);
                 }
             }
         }else{
@@ -425,9 +455,9 @@ void Task_Chassis(void *Parameters) {
         Chassis_Update(&ChassisData, vx, vy, vwRamp); // 更新麦轮转速
         Chassis_Fix(&ChassisData, motorAngle);        // 修正旋转后底盘的前进方向
         Chassis_Calculate_Rotor_Speed(&ChassisData);  
-        PID_Calculate(&PID_Fx, ChassisData.vx, ChassisData.realvx);
-        PID_Calculate(&PID_Fy, ChassisData.vy, ChassisData.realvy);
-        PID_Calculate(&PID_T, vwRamp, ChassisData.realvw);
+        PID_Calculate(&PID_Fx, ChassisData.vx, realvxForPid);
+        PID_Calculate(&PID_Fy, ChassisData.vy, realvyForPid);
+        PID_Calculate(&PID_T, vwRamp, realvwForPid);
         Chassis_Updata_FT(&ChassisData, PID_Fx.output, PID_Fy.output, PID_T.output);
         Chassis_Calculate_Rotor_Torgue(&ChassisData);
 

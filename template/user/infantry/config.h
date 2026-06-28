@@ -27,6 +27,11 @@
 #define CHASSIS_SIZE_K 0.385f               // 测量值, 机器人中心点到XY边缘的距离之和, 麦轮用 及(a+b)
 #define CHASSIS_INVERSE_WHEEL_RADIUS 6.667f // 测量值, 轮半径的倒数
 #define CHASSIS_RADIUS 0.245f               // 测量值，全向轮电机到底盘俯视图几何中心的距离
+#define CHASSIS_REMOTE_DEADZONE 30
+#define CHASSIS_YAW_SPEED_DEADZONE_DPS 2.0f
+#define CHASSIS_FOLLOW_ANGLE_DEADZONE 3.0f
+#define CHASSIS_IDLE_LINEAR_SPEED_DEADZONE 0.05f
+#define CHASSIS_IDLE_ANGULAR_SPEED_DEADZONE 0.05f
 // k0,k1,k2,k3,k4,k5
 #define SECOND_MACLAURIN_COEFFICIENT {0.6641993412640775,     \
                                       0.006444284468539646,   \
